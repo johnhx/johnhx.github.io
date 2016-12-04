@@ -1,10 +1,10 @@
 markdown: rdiscount
 highlighter: pygments
 permalink: /:year/:month/:day/:title.html
-name: "j he"
+name: "进击的胖纸"
 markdown: rdiscount
 
-author: "j"
+author: "John He"
 atom-baseurl: "http://johnhx.github.io"
 disqus: "gopherwood"
 
