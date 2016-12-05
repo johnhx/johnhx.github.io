@@ -10,10 +10,10 @@ tags:
 先说下背景，过去两年，在某渣外企，从一团乱麻开始，摸石头过河，完整经历组织敏捷转型，跟着两个敏捷团队一起初步成型。
 我的角色是Scrum Master加Technical Leader。
 
-### 对敏捷的认识 ###
 
 
 #### 对Scrum Master的认识 ####
+
 
 
 我过去两年一直在做Scrum Master。
@@ -31,6 +31,7 @@ tags:
 很多人问，Scrum Master需要懂产品和技术吗？
 
 我想说，Scrum Master懂产品和技术肯定几乎是必须的！不懂产品和技术的Scrum Master就是纯花瓶，开各种会就纯当看客？风险依赖也纯依靠团队？joking吧。。。
+
 所以，在我看来，其实Scrum Master几乎必须是Technical Leader。
 
 
@@ -98,13 +99,13 @@ tags:
 
 - 回顾会：
 
-  形式多样。
-  
-  free talk 专人记录；
-  
-  写ticket，Scrum Master来统一过；
-  
-  情绪曲线；
+    形式多样，包括但不限于：
+
+    free talk 专人记录；
+
+    写ticket，Scrum Master来统一过；
+
+    情绪曲线；
 
 
 ### 对政治斗争的认识 ###
