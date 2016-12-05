@@ -1,6 +1,7 @@
 highlighter: rouge
 permalink: /:year/:month/:day/:title.html
 name: "进击的胖纸"
+markdown: rdiscount
 
 author: "John He"
 atom-baseurl: "http://johnhx.github.io"
