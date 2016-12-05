@@ -1,5 +1,5 @@
 ---
-title: 一些关于管理的思考
+title: 一些关于管理的思考 -- 对敏捷的认识
 layout: post
 tags:
   - 管理
