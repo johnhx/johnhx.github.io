@@ -52,22 +52,31 @@ tags:
 
 所谓grooming会议就是团队和产品经理一起，来brainstorming和整理接下来一个很长阶段需要做的backlogs。
 
+
 这五个会，从道理上讲都是很重要。
+
 但是如何激发参会者的代入感、参与度(engagement)，如何让这五个会开得有价值，就是Scrum Master和团队一起需要做的努力。
+
 在团队参与度很低的时候，Scrum Master要及时察觉，带动气氛，勤问问题，拉动会议气氛；
+
 在团队参与度很高的时候，Scrum Master要把握会议的风向，不能让会议纯粹走向散沙一般无结果的讨论。
 
 每个会议，都要identify follow-up actions(具体到每个人头上)，并且规整MoM。
+
 
 下面具体说下每个会议实际的操作方式：
 
 - 计划会：
   
   第一步. 产品经理从backlog list里拿出优先级高的backlogs;
+
   第二步. 产品经理依次讲述backlog的AC;(DoD不用讲，因为DoD是general固化在团队每个member心中的，如果没有固化，请固化先);
+
   第三步. 团队问问题，给backlog的估计，并在这个过程中和产品经理一起完善AC;
+
   第四步. 根据团队在Sprint里面估计的capacity，给承诺，承诺哪些backlog能做，哪些不能做。
-  第四步. 领backlog(可选，也可以留到站会上领)。
+
+  第五步. 领backlog(可选，也可以留到站会上领)。
   
   愉快的散会。
 
@@ -76,12 +85,15 @@ tags:
   全过程控制在15分钟以内。
   
   第一步. 按人来过backlog的状态(只说大致进展和遇到的问题，不说细节);
+  
   第二步. 标识highlight的问题。尽量会上解决，不能解决就下来解决。
   
 - 演示会：
 
   第一步. Scrum Master过一下Sprint的Summary，数据，JIRA状态，backlogs状态，风险解决情况，内部外部依赖解决情况。
+  
   第二步. 各个演示者来做实际演示。
+  
   第三步. Q&A
 
 - 回顾会：
@@ -89,7 +101,9 @@ tags:
   形式多样。
   
   free talk 专人记录；
+  
   写ticket，Scrum Master来统一过；
+  
   情绪曲线；
 
 
