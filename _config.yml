@@ -1,4 +1,3 @@
-markdown: rdiscount
 highlighter: pygments
 permalink: /:year/:month/:day/:title.html
 name: "进击的胖纸"
