@@ -1,26 +1,45 @@
-highlighter: pygments
-permalink: /:year/:month/:day/:title.html
-name: "进击的胖纸"
-markdown: rdiscount
-
-author: "John He"
-atom-baseurl: "http://johnhx.github.io"
-disqus: "gopherwood"
-
-navigations:
-  - title: Archive
-    class: fa fa-list-ul
-    href: /archive.html
-  - title: Tags
-    class: fa fa-tags
-    href: /tags.html
-  - title: About
-    class: fa fa-user
-    href: /about.html
-  - title: Gallery
-    class: fa fa-film
-    href: http://johnhx.github.io
-  - title: Subscribe
-    class: fa fa-rss
-    href: /atom.xml
-
+# build
+markdown: kramdown
+permalink: /blog/:year/:title/
+exclude:
+  - CNAME
+  - Gemfile
+  - LICENSE
+  - Rakefile
+  - README.md
+  - vendor/
+  - vnu/
+  - vnu.zip
+layouts: ./_noita
+sass:
+  sass_dir: noita/_scss
+  style: compressed
+# compress layout in _noita/compress.html
+compress_html:
+  clippings: all
+  endings: all
+  comments: ["<!--", "-->"]
+  ignore:
+    envs: [travis]
+# theme
+noita:
+  name: 进击的胖纸
+  description: Jekyll theme built with Foundation
+  author:
+    name: John He
+    url: http://johnhx.github.io
+  lang: en
+  favicons:
+    - /assets/2014/04/21/favicon-152.png
+  topbar:
+    toggle: Menu
+    right:
+      - name: About
+        url: /about/
+      - name: Guide
+        url: /guide/
+      - name: Blog
+        url: /blog/
+      - name: Repository
+        url: https://github.com/penibelst/jekyll-noita
+        class: small button

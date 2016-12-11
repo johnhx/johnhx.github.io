@@ -1,65 +1,31 @@
-task :default => :generate
+require "rake"
 
-desc 'Create new post with rake "post[post-name]"'
-task :post, [:title] do |t, args|
-  if args.title then
-    new_post(args.title)
-  else
-    puts 'rake "post[post-name]"'
-  end
+task :default => :test
+
+desc "Preview the site with Jekyll"
+task :preview do
+  sh "bundle exec jekyll serve --watch --drafts"
 end
 
-desc 'Build site with Jekyll'
-task :generate => [:clean, :scss] do
-  `jekyll`
+BUILD_DIR = "_site"
+file BUILD_DIR do
+  sh "bundle exec jekyll build --drafts"
 end
 
-desc 'Generate css'
-task :scss do
-  `scss media/css/style.scss media/css/style.css`
+task :test => [:validate, :proof]
+
+desc "Test the site with Proofer"
+task :proof => BUILD_DIR do
+  require "html/proofer"
+  HTML::Proofer.new(BUILD_DIR).run
 end
 
-desc 'Start server'
-task :server => [:clean, :scss] do
-  `jekyll serve -t`
+VALIDATOR = "vnu/vnu.jar"
+file VALIDATOR do |f|
+  sh "wget -O vnu.zip https://github.com/validator/validator/releases/download/20141006/vnu-20141013.jar.zip"
+  sh "unzip vnu.zip #{f.name}"
 end
 
-desc 'Deploy with rake "depoly[comment]"'
-task :deploy, [:comment] => :generate do |t, args|
-  if args.comment then
-    `git commit . -m '#{args.comment}' && git push`
-  else
-    `git commit . -m 'new deployment' && git push`
-  end
-end
-
-desc 'Clean up'
-task :clean do
-  `rm -rf _site`
-end
-
-def new_post(title)
-  time = Time.now
-  filename = "_posts/" + time.strftime("%Y-%m-%d-") + title + '.markdown'
-  if File.exists? filename then
-    puts "Post already exists: #{filename}"
-    return
-  end
-  uuid = `uuidgen | tr "[:upper:]" "[:lower:]" | tr -d "\n"`
-  File.open(filename, "wb") do |f|
-    f << <<-EOS
----
-title: #{title}
-layout: post
-guid: urn:uuid:#{uuid}
-tags:
-  - 
----
-
-
-EOS
-  %x[echo "#{filename}" | pbcopy]
-  end
-  puts "created #{filename}"
-  `git add #{filename}`
+task :validate => [BUILD_DIR, VALIDATOR] do
+  sh "java -jar #{File.join(".", VALIDATOR)} #{BUILD_DIR}"
 end
