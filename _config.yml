@@ -48,7 +48,7 @@ excerpt_separator: "<!--more-->"
 detach:  false
 port:    4000
 host:    127.0.0.1
-baseurl: "/" # does not include hostname
+baseurl: "" # does not include hostname
 url: "https://johnhx.github.io" # the base hostname & protocol for your site
 
 # Outputting
