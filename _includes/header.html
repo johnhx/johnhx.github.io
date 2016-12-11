@@ -1,0 +1,21 @@
+<header class="main-header" itemscope itemtype="http://schema.org/Organization">
+    <div class="wc-container">
+        <h1 itemprop="name"><a href="{{ site.baseurl }}/" itemprop="url">{{ site.title }}</a></h1>
+        <h2 itemprop="description">{{ site.subtitle }}</h2>
+        <nav>
+            <ul>
+            {% for nav in site.data.navs %}
+            {% if nav.external %}
+                <li><a href="{{ nav.url }}" target="_blank">{{ nav.title }}</a></li>
+            {% else %}
+                {% if page.url == nav.url %}
+                <li><a href="{{ nav.url | prepend: site.baseurl | prepend: site.url }}" class="active" rel="bookmark">{{ nav.title }}</a></li>
+                {% else %}
+                <li><a href="{{ nav.url | prepend: site.baseurl | prepend: site.url }}" rel="bookmark">{{ nav.title }}</a></li>
+                {% endif %}
+            {% endif %}
+            {% endfor %}
+            </ul>
+        </nav>
+    </div>
+</header>
