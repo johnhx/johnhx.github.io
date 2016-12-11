@@ -24,7 +24,7 @@ compress_html:
 # theme
 noita:
   name: 进击的胖纸
-  description: Jekyll theme built with Foundation
+  description: 生活需要记录
   author:
     name: John He
     url: http://johnhx.github.io
@@ -41,5 +41,5 @@ noita:
       - name: Blog
         url: /blog/
       - name: Repository
-        url: https://github.com/penibelst/jekyll-noita
+        url: https://github.com/johnhx/johnhx.github.io
         class: small button
