@@ -36,13 +36,13 @@ unpublished: false
 
 # Plugins
 whitelist: []
-gems:      ["jekyll-mentions", "jemoji", "jekyll-redirect-from"]
+# gems:      ["jekyll-mentions", "jemoji", "jekyll-redirect-from"]
 
 # Conversion
 markdown:    kramdown
-highlighter: pygments
-lsi:         false
-excerpt_separator: "<!--more-->"
+#highlighter: pygments
+#lsi:         false
+#excerpt_separator: "<!--more-->"
 
 # Serving
 detach:  false
@@ -52,39 +52,39 @@ baseurl: "" # does not include hostname
 url: "https://johnhx.github.io" # the base hostname & protocol for your site
 
 # Outputting
-permalink:     date
-paginate: 6
-paginate_path: /page:num
-timezone:      Asia/Shanghai
+#permalink:     date
+#paginate: 6
+#paginate_path: /page:num
+#timezone:      Asia/Shanghai
 
-quiet:    false
-defaults: []
+#quiet:    false
+#defaults: []
 
 # Markdown Processors
-rdiscount:
-  extensions: []
+#rdiscount:
+#  extensions: []
 
-redcarpet:
-  extensions: []
+#redcarpet:
+#  extensions: []
 
-kramdown:
-  auto_ids:       true
-  footnote_nr:    1
-  entity_output:  as_char
-  toc_levels:     1..6
-  smart_quotes:   lsquo,rsquo,ldquo,rdquo
-  enable_coderay: false
+#kramdown:
+#  auto_ids:       true
+#  footnote_nr:    1
+#  entity_output:  as_char
+#  toc_levels:     1..6
+#  smart_quotes:   lsquo,rsquo,ldquo,rdquo
+#  enable_coderay: false
 
-  coderay:
-    coderay_wrap:              div
-    coderay_line_numbers:      inline
-    coderay_line_number_start: 1
-    coderay_tab_width:         4
-    coderay_bold_every:        10
-    coderay_css:               style
+#  coderay:
+#    coderay_wrap:              div
+#    coderay_line_numbers:      inline
+#    coderay_line_number_start: 1
+#    coderay_tab_width:         4
+#    coderay_bold_every:        10
+#    coderay_css:               style
 
-sass:
-    sass_dir: _sass
-    style: :compressed
+#sass:
+#    sass_dir: _sass
+#    style: :compressed
 
 theme: Tactile
