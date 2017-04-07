@@ -61,7 +61,7 @@ while(on){
 
 newSingleThreadExecutor创建的corePoolSize为1，maximumPoolSize为1，workQueue为unbounding的LinkedBlockingQueue，即无界队列，允许无限多排队。
 
-#### issue描述
+###### issue描述
 
 同时launch多个Job（比如2个），称为Job1，Job2.
 
@@ -72,3 +72,24 @@ Job1被process为COMPLETED，准备进入下一状态；
 Job2随后被process为COMPLETED，也准备进入下一状态。
 
 问题来了，当Job2被处理结束后，日志显示，Job2又立马被设置成了INPROGRESS状态，重跑一遍INPROGRESS->COMPLETED。
+
+###### 问题跟踪
+
+跟踪后发现，当Job1在处理的同时，主线程仍然在listStartOrNewEntities，这个时候listStartOrNewEntities的结果只有Job2，所以Job2被不停的挂在线程池等待队列上等待被处理。
+
+这也是为什么Job2在被处理结束状态进入COMPLETED的同时，立即被设置为INPROGRESS的原因。
+
+
+###### 问题解决
+
+这个问题的解决方案有几种：
+
+方案1： 为JobState增加一个QUEUED的状态。创建CompletableFuture之前，如果状态为QUEUED，就不创建也就避免了排队；
+
+方案2：将INPROGRESS状态设置这个动作，单拎出来，作为一个任务放在两个foreach之间。
+
+方案3：在CompletableFuture的处理函数里面做判断，如果JobState已经为COMPLETED，不予处理直接返回。
+
+其中，方案3，仅仅是跳过处理，仍然让Job进行了等待队列的排队，逻辑不正确，不可取。
+
+只能从方案1和方案2中选择一种解决方案。
