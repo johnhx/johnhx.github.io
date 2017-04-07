@@ -56,7 +56,7 @@ while(on){
 
 > newSingleThreadExecutor创建的corePoolSize为1，maximumPoolSize为1，workQueue为unbounding的LinkedBlockingQueue，即无界队列，允许无限多排队。
 
-###### issue描述
+#### issue描述
 
 同时launch多个Job（比如2个），称为Job1，Job2.
 
@@ -68,7 +68,7 @@ Job2随后被process为COMPLETED，也准备进入下一状态。
 
 问题来了，当Job2被处理结束后，日志显示，Job2又立马被设置成了INPROGRESS状态，重跑一遍INPROGRESS->COMPLETED。
 
-###### 问题跟踪
+#### 问题跟踪
 
 跟踪后发现，当Job1在处理的同时，主线程仍然在listStartOrNewEntities，这个时候listStartOrNewEntities的结果只有Job2，所以Job2被不停的挂在线程池等待队列上等待被处理。
 
