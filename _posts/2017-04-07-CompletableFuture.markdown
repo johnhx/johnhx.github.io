@@ -49,17 +49,17 @@ while(on){
 
 > ThreadExecutorPool的构造函数有多个参数
 
-- corePoolSize: the number of threads to keep in the pool
+> - corePoolSize: the number of threads to keep in the pool
 
-- maximumPoolSize: the maximum number of threads to allow in the pool
+> - maximumPoolSize: the maximum number of threads to allow in the pool
 
-- keepAliveTime: 当线程数量大于corePoolSize时，当一个线程无事可做时，超过一定的时间（keepAliveTime），这个线程就会被停掉。
+> - keepAliveTime: 当线程数量大于corePoolSize时，当一个线程无事可做时，超过一定的时间（keepAliveTime），这个线程就会被停掉。
 
-- unit
+> - unit
 
-- workQueue：类型为BlockingQueue<Runnable>
+> - workQueue：类型为BlockingQueue<Runnable>
 
-newSingleThreadExecutor创建的corePoolSize为1，maximumPoolSize为1，workQueue为unbounding的LinkedBlockingQueue，即无界队列，允许无限多排队。
+> newSingleThreadExecutor创建的corePoolSize为1，maximumPoolSize为1，workQueue为unbounding的LinkedBlockingQueue，即无界队列，允许无限多排队。
 
 ###### issue描述
 
