@@ -61,4 +61,14 @@ while(on){
 
 newSingleThreadExecutor创建的corePoolSize为1，maximumPoolSize为1，workQueue为unbounding的LinkedBlockingQueue，即无界队列，允许无限多排队。
 
+#### issue描述
 
+同时launch多个Job（比如2个），称为Job1，Job2.
+
+Job1和Job2同时进入NEW状态。
+
+Job1被process为COMPLETED，准备进入下一状态；
+
+Job2随后被process为COMPLETED，也准备进入下一状态。
+
+问题来了，当Job2被处理结束后，日志显示，Job2又立马被设置成了INPROGRESS状态，重跑一遍INPROGRESS->COMPLETED。
