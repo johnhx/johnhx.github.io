@@ -20,8 +20,8 @@ tags:
 
 伪代码如下：
 
-> listCompletedEntities
-
-> foreach listCompletedEntities
-
+``
+listCompletedEntities
+foreach listCompletedEntities
+``
 
