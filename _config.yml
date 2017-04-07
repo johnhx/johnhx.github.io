@@ -1,89 +1,60 @@
+# Welcome to Jekyll!
+#
+# This config file is meant for settings that affect your whole blog, values
+# which you are expected to set up once and rarely need to edit after that.
+# For technical reasons, this file is *NOT* reloaded automatically when you use
+# 'jekyll serve'. If you change this file, please restart the server process.
+
 # Site settings
-title: Fighting John
-subtitle: Climbing Life.
-email: hejiangx@gmail.com
-lang: zh-CN # for html lang
-description: > # this means to ignore newlines until "baseurl:"
-  Write an awesome description for your new site here. You can edit this
-  line in _config.yml. It will appear in your document head meta (for
-  Google search results) and in your feed.xml site description.
-keywords: "blog, gentoo, linux, vim, zsh"
-favicon: http://ibrother.qiniudn.com/favicon.ico
-highlighting-style: solarized-light
-branch: gh-pages
-
-# Where things are
-source:      .
-destination: ./_site
-plugins:     ./_plugins
-layouts:     ./_layouts
-data_source: ./_data
-collections: null
-
-# Handling Reading
-safe:         false
-include:      [".htaccess"]
-exclude:      [vendor]
-keep_files:   [".git", ".svn"]
-encoding:     "utf-8"
-markdown_ext: "markdown,mkdown,mkdn,mkd,md"
-
-# Filtering Content
-show_drafts: null
-limit_posts: 0
-future:      true
-unpublished: false
-
-# Plugins
-whitelist: []
-#gems:      ["jekyll-mentions", "jemoji", "jekyll-redirect-from"]
-gems:	[]
-
-# Conversion
-markdown:    kramdown
-highlighter: pygments
-#lsi:         false
-excerpt_separator: "<!--more-->"
-
-# Serving
-detach:  false
-port:    4000
-host:    127.0.0.1
-baseurl: "" # does not include hostname
+title: JH
+brief-intro: Full Stack Engineer
+baseurl: "" # the subpath of your site, e.g. /blog
 url: "https://johnhx.github.io" # the base hostname & protocol for your site
 
-# Outputting
-permalink:     date
-paginate: 6
-paginate_path: /page:num
-timezone:      Asia/Shanghai
+permalink: /:year/:month/:day/:title/
 
-quiet:    false
-defaults: []
+# other links
+twitter_username: hejiangx
+facebook_username: hejiangx
+github_username:  johnhx
+email: hejiangx@gmail.com
+weibo_username: johnhx
+zhihu_username: johnhx
+linkedIn_username: johnhx
+dribbble_username:
 
-# Markdown Processors
-rdiscount:
-  extensions: []
+description_footer: 本站记录一路走来的沿途风景！
 
-redcarpet:
-  extensions: []
+# comments
+# two ways to comment, only choose one, and use your own short name
+# 两种评论插件，选一个就好了，使用自己的 short_name
+duoshuo_shortname: #hygblog
+disqus_shortname: johnhe
+
+# statistic analysis 统计代码
+# 百度统计 id，将统计代码替换为自己的百度统计id，即
+# hm.src = "//hm.baidu.com/hm.js?xxxxxxxxxxxx";
+# xxxxx字符串
+#baidu_tongji_id: cf8506e0ef223e57ff6239944e5d46a4
+#google_analytics_id: UA-72449510-4 # google 分析追踪id
+
+# Build settings
+markdown: kramdown
 
 kramdown:
-  auto_ids:       true
-  footnote_nr:    1
-  entity_output:  as_char
-  toc_levels:     1..6
-  smart_quotes:   lsquo,rsquo,ldquo,rdquo
-  enable_coderay: false
+  input: GFM
+  syntax_highlighter: rouge
 
-coderay:
-    coderay_wrap:              div
-    coderay_line_numbers:      inline
-    coderay_line_number_start: 1
-    coderay_tab_width:         4
-    coderay_bold_every:        10
-    coderay_css:               style
+# port
+# port: 1234
 
-sass:
-    sass_dir: _sass
-    style: :compressed
+# url
+category_dir: category/
+tag_dir: tag/
+
+# excerpt
+excerpt_separator: "\n\n\n\n"
+
+# paginate
+gems: [jekyll-paginate]
+paginate: 6

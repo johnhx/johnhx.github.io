@@ -1,20 +1,33 @@
-<header class="main-header" itemscope itemtype="http://schema.org/Organization">
-    <div class="wc-container">
-        <h1 itemprop="name"><a href="{{ site.baseurl }}/" itemprop="url">{{ site.title }}</a></h1>
-        <h2 itemprop="description">{{ site.subtitle }}</h2>
-        <nav>
+<header id="top">
+    <div class="wrapper">
+        <a href="{{ site.baseurl }}/" class="brand">{{ site.title }}</a>
+        <small>{{site.brief-intro}}</small>
+        <button id="headerMenu" class="menu"><i class="fa fa-bars"></i></button>
+        <nav id="headerNav">
             <ul>
-            {% for nav in site.data.navs %}
-            {% if nav.external %}
-                <li><a href="{{ nav.url }}" target="_blank">{{ nav.title }}</a></li>
-            {% else %}
-                {% if page.url == nav.url %}
-                <li><a href="{{ nav.url | prepend: site.baseurl | prepend: site.url }}" class="active" rel="bookmark">{{ nav.title }}</a></li>
-                {% else %}
-                <li><a href="{{ nav.url | prepend: site.baseurl | prepend: site.url }}" rel="bookmark">{{ nav.title }}</a></li>
-                {% endif %}
-            {% endif %}
-            {% endfor %}
+                <li>
+                    {% if page.url == '/' %}
+                    <a class="active" href="{{site.baseurl}}/">
+                        {% else %}
+                    <a href="{{site.baseurl}}/">
+                    {% endif %}
+                        <i class="fa fa-home"></i>Home
+                    </a>
+                </li>
+
+                {% for my_page in site.pages %}
+                    {% if my_page.type == 'page' %}
+                    <li>
+                        {% if my_page.url == page.url %}
+                        <a class="active" href="{{ my_page.url | prepend: site.baseurl }}">
+                            {% else %}
+                        <a href="{{ my_page.url | prepend: site.baseurl }}">
+                        {% endif %}
+                            <i class="fa fa-{{my_page.icon}}"></i>{{ my_page.title }}
+                        </a>
+                    </li>
+                    {% endif %}
+                {% endfor %}
             </ul>
         </nav>
     </div>
