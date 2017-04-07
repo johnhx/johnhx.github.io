@@ -20,7 +20,7 @@ tags:
 
 伪代码如下：
 
-``
+```java
 
 while(on){
 	var completedEntities = listCompletedEntities
@@ -43,7 +43,7 @@ while(on){
 	/foreach
 }
 
-``
+```
 
 附上newSingleThreadExecutor的背景知识：
 
