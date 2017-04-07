@@ -27,64 +27,59 @@ author: John He
 
 ```java
 
-		while(on){
-			List<? extends IJobEntity> jobEntities = listToDoIJobEntities();
+while(on){
+	List<? extends IJobEntity> jobEntities = listToDoIJobEntities();
 
-			for (IJobEntity jobEntity : jobEntities){
-				Enum nextState = jobEntity.getEntityNextState();
-				Enum newState = nextState;
+	for (IJobEntity jobEntity : jobEntities){
+		Enum nextState = jobEntity.getEntityNextState();
+		Enum newState = nextState;
 
-				if (nextState != null){ // TODO: probably need to add nextState != NULL in the sql query above
+		if (nextState != null){ // TODO: probably need to add nextState != NULL in the sql query above
 
-					if (nextState.ordinal() == readyState.ordinal() - 1){
-						newState = readyState;
-						nextState = null;
+			if (nextState.ordinal() == readyState.ordinal() - 1){
+				newState = readyState;
+				nextState = null;
 
-						dao.update(null, mapOf("state", newState, "nextState", nextState, "jobState", null), jobEntity.getEntityId());
-					}
-					else{
+				dao.update(null, mapOf("state", newState, "nextState", nextState, "jobState", null), jobEntity.getEntityId());
+			}
+			else{
+				nextState = jobEntity.getJobNextState();
 
-						nextState = jobEntity.getJobNextState();
-
-						dao.update(null, mapOf("state", newState, "nextState", nextState, "jobState", JobState.NEW), jobEntity.getEntityId());
-					}
-
-					IJobEntity tmpJobEntity = getDao().get(null, jobEntity.getEntityId()).orElse(null);
-				}
+				dao.update(null, mapOf("state", newState, "nextState", nextState, "jobState", JobState.NEW), jobEntity.getEntityId());
 			}
 
-			jobEntities = listNewAndStartedJobEntities();
-			for (IJobEntity jobEntity : jobEntities){
-				CompletableFuture<JobResult> future =  CompletableFuture.supplyAsync(() -> {
-					Enum nextState = jobEntity.getEntityNextState();
-					IJobEntity latestJobEntity= getDao().get(null, jobEntity.getEntityId()).orElse(null);
-
-					if (nextState != latestJobEntity.getEntityNextState()){
-						return null;
-					}
-
-					// perform the task and set JobState INPROGRESS
-					return getDoers().doJob(nextState, jobEntity.getEntityId());
-				}, jobExecutor);
-
-				future.thenAccept(jobResult -> {
-					if (jobResult == null){
-						return;
-					}
-
-					IJobEntity tmpJobEntity = getDao().get(currentUserHolder.get(),jobResult.getEntityId()).orElse(null);
-
-					Map<String, Object> data = new HashedMap();
-
-					// Set JobState COMPLETED
-					data.put("jobState", jobResult.getJobState());
-					data.put("jobInfo", jobResult.getInfo());
-					data.put("jobEx", null);
-
-					dao.update(currentUserHolder.get(), data, jobResult.getEntityId());
-				});
-			}
+			IJobEntity tmpJobEntity = getDao().get(null, jobEntity.getEntityId()).orElse(null);
 		}
+	}
+
+	jobEntities = listNewAndStartedJobEntities();
+	for (IJobEntity jobEntity : jobEntities){
+		CompletableFuture<JobResult> future =  CompletableFuture.supplyAsync(() -> {
+			Enum nextState = jobEntity.getEntityNextState();
+			IJobEntity latestJobEntity= getDao().get(null, jobEntity.getEntityId()).orElse(null);
+
+			if (nextState != latestJobEntity.getEntityNextState()){
+				return null;
+			}
+
+			// perform the task and set JobState INPROGRESS
+			return getDoers().doJob(nextState, jobEntity.getEntityId());
+		}, jobExecutor);
+
+		future.thenAccept(jobResult -> {
+			if (jobResult == null){
+				return;
+			}
+
+			IJobEntity tmpJobEntity = getDao().get(currentUserHolder.get(),jobResult.getEntityId()).orElse(null);
+
+			Map<String, Object> data = new HashedMap();
+
+			// Set JobState COMPLETED
+			data.put("jobState", jobResult.getJobState());
+			dao.update(currentUserHolder.get(), data, jobResult.getEntityId());
+		});
+	}
 }
 
 ```
