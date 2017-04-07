@@ -21,6 +21,7 @@ tags:
 伪代码如下：
 
 ``
+
 while(on){
 	var completedEntities = listCompletedEntities
 
@@ -41,11 +42,12 @@ while(on){
 			set JobState = COMPLETED
 	/foreach
 }
+
 ``
 
 附上newSingleThreadExecutor的背景知识：
 
-ThreadExecutorPool的构造函数有多个参数
+> ThreadExecutorPool的构造函数有多个参数
 
 - corePoolSize: the number of threads to keep in the pool
 
