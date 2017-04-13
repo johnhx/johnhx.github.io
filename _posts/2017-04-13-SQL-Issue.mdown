@@ -17,13 +17,15 @@ google了一番，将字段类型改成了ntext，存中文便没了问题。（
 
 但是该字段被改成了ntext后，造成了其他一些业务逻辑上的问题。
 
-一番跟踪后发现，原来是一个Store Procedure用了如下语句做判断：
+一番跟踪后，发现是一个Store Procedure用了如下语句做判断：
 ```sql
 IF((SELECT SettingValue FROM bvc_WebSettings WHERE SettingName = 'xxx') = 1)
 这样的判断，其中SettingValue正是被我改为ntext类型的字段。
 ```
 
-字段类型改为ntext后，这个if里的语法就有问题了，ntext不能直接和integer做比较，需要更改为：
+字段类型改为ntext后，这个if里的语法就有问题了，ntext不能直接和integer做比较。
+
+需要更改为：
 ```sql
 IF cast((SELECT SettingValue FROM bvc_WebAppSetting WHERE SettingName = 'xxx') as nvarchar(max)) = 1
 ```
