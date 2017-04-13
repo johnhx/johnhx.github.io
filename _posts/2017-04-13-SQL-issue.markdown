@@ -13,7 +13,7 @@ author: John He
 
 nvarchar(MAX)存入中文时，显示为???乱码。
 
-google了一番，将字段类型改成了ntext，存中文便没了问题。（这个改法其实是有问题的，后来一番google得知，ntext已经被遗弃不用了，都推荐使用nvarchar(MAX)了，但是为什么nvarchar(MAX)存入中文会显示???乱码，这个作为一个问题随后再研究）
+google了一番，将字段类型改成了ntext，存中文便没了问题。（这个改法其实是有问题的，后来一番google得知，ntext已经被遗弃不用了，都推荐使用nvarchar(MAX)了，但是为什么nvarchar(MAX)存入中文会显示???乱码，这个作为一个问题以后再研究）
 
 但是该字段被改成了ntext后，造成了其他一些业务逻辑上的问题。
 
