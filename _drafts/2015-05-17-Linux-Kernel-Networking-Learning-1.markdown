@@ -8,45 +8,58 @@ tags:
   - tcp
 ---
 
-举例:  
+socket接口如下:  
 
-	client_sockfd = socket(PF_INET, SOCK_STREAM, 0)  
+```C
+client_sockfd = socket(PF_INET, SOCK_STREAM, 0)  
+```
 
 其中，family为PF_INET, type为SOCK_STREAM，protocol为0  
-## SOCK_CREATE  
-调用sock_create创建socket对象；  
-调用__sock_create(current->nsproxy->net_ns, family, type, protocol, res, 0):  
-sock_alloc;  
-pf->create(net, sock, protocol, kern),调到inet_create进行INET层socket的创建;  
-## INET_CREATE  
+
+## SOCK层  
+
+主要操作为:
+- 调用sock_create创建socket对象；  
+- 调用__sock_create(current->nsproxy->net_ns, family, type, protocol, res, 0):  
+
+__sock_create的主要操作为:
+- sock_alloc;  
+- pf->create(net, sock, protocol, kern), 该方法调到inet_create进行INET层socket的创建;  
+
+## INET层
+
 在net\ipv4\af_inet.c的inet_create中:  
 
-1. 遍历inetsw[sock->type]数组（即inetsw[SOCK_STREAM]，inetsw_array按照type注册在inetsw中），protocol赋值为IPPROTO_TCP如下:  
+- 遍历inetsw[sock->type]数组(即inetsw[SOCK_STREAM], inetsw_array按照type注册在inetsw中), TCP对应的inetsw结构如下:  
 	
-		{
-			.type =       SOCK_STREAM,
-          	.protocol =   IPPROTO_TCP,
-          	.prot =       &tcp_prot,
-          	.ops =        &inet_stream_ops,
-          	.no_check =   0,
-          	.flags =      INET_PROTOSW_PERMANENT | INET_PROTOSW_ICSK,
-    	}
-    
-    sock->ops = &inet_stream_ops;
+```C
+...
+{
+	.type =       SOCK_STREAM,
+    .protocol =   IPPROTO_TCP,
+    .prot =       &tcp_prot,
+    .ops =        &inet_stream_ops,
+    .no_check =   0,
+    .flags =      INET_PROTOSW_PERMANENT | INET_PROTOSW_ICSK,
+}
+...
+```
 
-2. 调用sk_alloc分配sock对象  
+- 调用sk_alloc分配sock对象sk
 注意：这个sock对象是inet_sock, inet_connection_sock，tcp_sock等通用的sock对象！  
-	
-		kmalloc(prot->obj_size, priority);   
 
-其中prot->obj_size为上段代码中的&tcp_prot.obj_size即sizeof(struct tcp_sock);  
+```C	
+kmalloc(prot->obj_size, priority);   
+```
+
+其中prot->obj_size为INET层中TCP对应的inetsw结构中的&tcp_prot.obj_size, 即sizeof(struct tcp_sock);  
 	
-		sk->sk_family为PF_INET;  
-		sk->sk_prot为上段代码中的tcp_prot;  
-		sk->classid为current task的class id;    
-		sk->sk_cgrp_prioidx和current task的css->cgroup->id保持一致;  
+sk->sk_family为PF_INET;  
+sk->sk_prot为上段代码中的tcp_prot;  
+sk->classid为current task的class id;    
+sk->sk_cgrp_prioidx和current task的css->cgroup->id保持一致;  
  
-3. 为inet_sock对象进行初始化  
+- 为inet_sock对象进行初始化  
 将sock对象强转为inet_sock进行以下赋值:  
 		
 		inet->is_icsk (如果&tcp_prot的flags包含ICSK，则为1，表示这个sock是一个inet_connection_sock，即面向连接的sock)  
