@@ -48,6 +48,6 @@ Maven有一个生命周期的概念，有三套(这个量词是"套")：
 ```
 意味着run这个目标并没有被绑定在任何的阶段(Phase)上。
 
-那么"mvn jetty:run"这个命令的执行方式是：
-- mvn会编译到test-compile这个阶段(Phase);
+那么"mvn jetty:run"这个命令做的事情是：
+- 编译到test-compile这个阶段(Phase);
 - 执行run这个目标(Goal);
