@@ -7,11 +7,12 @@ tags:
 
 Android的应用程序开发有一个著名的Handler Leak问题。
 
-在描述这个问题的原理和解决方案前，先普及一个java的基础知识：
+在描述这个问题的原理和解决方案前，先摆一个java的基础知识：
 >在java中，非静态的内部类和匿名内部类会隐式地持有其外部类的引用。
 静态的内部类不会持有其外部类的引用。
 
-下面是正式开始。  
+基础知识摆了后，下面是正式主题。
+  
 关于Android的Hanlder，官方文档有这样一段说明：  
 >In Android, Handler classes should be static or leaks might occur, Messages enqueued on the application thread's MessageQueue also retain their target Handler. If the Handler is an inner class, its outer class will be retained as well. To avoid leaking the outer class, declare the Handler as a static nested class with a WeakReference to its outer class.
 
