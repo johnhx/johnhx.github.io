@@ -62,43 +62,43 @@ sk->sk_cgrp_prioidx和current task的css->cgroup->id保持一致;
 - 为inet_sock对象进行初始化  
 将sock对象强转为inet_sock进行以下赋值:  
 		
-		inet->is_icsk (如果&tcp_prot的flags包含ICSK，则为1，表示这个sock是一个inet_connection_sock，即面向连接的sock)  
-		inet->uc_ttl (unicast的ttl)  
-		inet->mc_ttl  
+inet->is_icsk (如果&tcp_prot的flags包含ICSK，则为1，表示这个sock是一个inet_connection_sock，即面向连接的sock)  
+inet->uc_ttl (unicast的ttl)  
+inet->mc_ttl  
  
-4. 调用sock_init_data  
+- 调用sock_init_data  
 struct sock*为内核实际收发使用的sock  
 struct socket*为用户态使用的socket;  
 sock_init_data将struct sock*->sk_socket直接赋值为struct socket*;  
 初始化sock对象的sk_receive_queue, sk_write_queue, sk_error_queue, 如果有DMA的话，sk_async_wait_queue;  
 为以下函数指针挂上callback:  
 
-		sk_state_change = sock_def_wakeup  
-		sk_data_ready = sock_def_readable  
-		sk_write_space = sock_def_write_space  
-		sk_error_report = sock_def_error_report  
-		sk_destruct =inet_sock_destruct
+sk_state_change = sock_def_wakeup  
+sk_data_ready = sock_def_readable  
+sk_write_space = sock_def_write_space  
+sk_error_report = sock_def_error_report  
+sk_destruct =inet_sock_destruct
 
-5. 调用sk->sk_prot->init(sk)，指向的是tcp_prot中的init即tcp_v4_init_sock  
+- 调用sk->sk_prot->init(sk)，指向的是tcp_prot中的init即tcp_v4_init_sock  
    *  将sock强转为inet_connection_sock进行以下赋值:  
-      
-      		icsk->icsk_af_ops = &ipv4_specific;  
+   ```C
+   icsk->icsk_af_ops = &ipv4_specific;  
+   ```
 
    *  调用tcp_init_sock对tcp_sock对象成员进行赋值:  
-
-   			out_of_order_queue(专门存放out of order的segment的queue);  
-   			&icsk->icsk_retransmit_timer挂上tcp_write_timer函数指针;  
-      		&icsk->icsk_delack_timer挂上tcp_delack_timer函数指针;  
-			&sk->sk_timer挂上tcp_keepalive_timer函数指针;  
-			ucopy结构体（用于direct copy to user）;  
-			icsk->icsk_rto初始值为TCP_TIMEOUT_INIT为1*HZ;  
-			tcp_sock.mdev（medium deviation);  
-			tcp_sock.snd_cwnd（发送的congestion window）;  
-			tcp_sock.mss_cache（将max segment size设为536，见self learning.网络学习）;  
-			tcp_sock.icsk_ca_ops（congestion control的hook functions）;  
-			sk->sk_write_space = sk_stream_write_space（回调函数，根据注释，当bf sending space available时调用），并设置标志位YES to call sk->sk_write_space in sock_wfree;  
-			sk->sk_sndbuf, sk_rcvbuf（send buffer的大小，receive buffer的大小） = sysctl_tcp_wmem[1] ( need follow-up );  
-			初始化sk_rcvbuf为全局sysctl_rmem_default, sk_sndbuf为全局sysctl_wmem_default ( need follow-up )
+   out_of_order_queue(专门存放out of order的segment的queue);  
+   &icsk->icsk_retransmit_timer挂上tcp_write_timer函数指针;  
+   &icsk->icsk_delack_timer挂上tcp_delack_timer函数指针;  
+   &sk->sk_timer挂上tcp_keepalive_timer函数指针;
+   ucopy结构体（用于direct copy to user）;  
+   icsk->icsk_rto初始值为TCP_TIMEOUT_INIT为1*HZ;  
+   tcp_sock.mdev（medium deviation);  
+   tcp_sock.snd_cwnd（发送的congestion window）;  
+   tcp_sock.mss_cache（将max segment size设为536，见self learning.网络学习）;  
+   tcp_sock.icsk_ca_ops（congestion control的hook functions）;  
+   sk->sk_write_space = sk_stream_write_space（回调函数，根据注释，当bf sending space available时调用），并设置标志位YES to call sk->sk_write_space in sock_wfree;
+   sk->sk_sndbuf, sk_rcvbuf（send buffer的大小，receive buffer的大小） = sysctl_tcp_wmem[1] ( need follow-up );
+   初始化sk_rcvbuf为全局sysctl_rmem_default, sk_sndbuf为全局sysctl_wmem_default ( need follow-up )
 
 
 ## 05/15/2015总结：
