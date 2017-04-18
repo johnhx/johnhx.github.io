@@ -1,0 +1,53 @@
+---
+title: 最近学习maven的一些记录
+layout: post
+categories: record
+tags: maven 包管理 java
+author: John He
+---
+
+* content
+{:toc}
+
+最近在看一个轻量级web application的框架。
+这个轻量级web application框架的，包管理、编译、打包都是通过Maven来实现的。
+并且通过使用Maven的Jetty插件启动运行。
+
+以前对Maven只是停留在使用的层面，没有耐心和时间深钻，便趁这个机会深入了解了一下。
+
+## Maven的生命周期
+Maven有一个生命周期的概念，有三套(这个量词是"套")：
+- clean
+- default
+- site
+
+上述三“套”生命周期，各自包含有不同的阶段(Phase);
+不同的阶段(Phase), 各自挂接一个或多个目标(Goal);
+
+所以，这三个名词的包含关系是这样的：
+生命周期(clean, default, site) -> 阶段(Phase) -> 目标(Goal);
+
+## 以阶段(Phase)来构建
+举例，最常用的"mvn clean"命令中, clean指的是某个阶段(Phase)。
+
+"mvn clean"指的是mvn会从clean这个阶段(Phase)所在的生命周期的第一个阶段(Phase)开始，执行到clean这个阶段(Phase)为止。
+
+在这个执行的过程中, 每个阶段(Phase)上挂接的每个目标(Goal)都会得到执行。
+
+每个阶段(Phase)也有对应的默认的plugin来负责处理，我们可以在pom.xml中的<plugins>节点里配置每个阶段(Phase)的plugin。
+
+## 以目标(Goal)来构建(以Maven的Jetty插件举例)
+举例, 在“mvn jetty:run”命令中, run是jetty插件的一个目标(Goal)。
+在jetty插件的实现中，run这个目标的mojo声明为:
+```Java
+@execute phase="test-compile"
+```
+并没有类似于下面这样的mojo声明:
+```Java
+@phase="compile"
+```
+意味着run这个目标并没有被绑定在任何的阶段(Phase)上。
+
+那么"mvn jetty:run"这个命令的执行方式是：
+- mvn会编译到test-compile这个阶段(Phase);
+- 执行run这个目标(Goal);
