@@ -20,7 +20,7 @@ Android的应用程序开发有一个著名的Handler Leak问题。
 
 导致泄漏的原因有两个:  
 - 原因1: MessageQueue中排队的Message对象持有对Handler的引用导致Handler泄漏;
-- 原因2: Handler对象对外部类（如所在的Activity或者Service）实例持有强引用.  
+- 原因2: Handler对象对外部类（如所在的Activity或者Service）实例持有强引用。
 
 这两个原因的共同作用造成了Android的Handler Leak.  
 
