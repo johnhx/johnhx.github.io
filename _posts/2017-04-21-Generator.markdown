@@ -14,7 +14,7 @@ author: John He
 thunk函数的定义：能将执行结果传入回调函数，并将该回调函数返回的函数。(呃, 太抽象了...)
 
 通常拿readFile来举例。下面是一个名为readFile的thunk函数:
-```JavaScript
+```javascript
 var readFile = function (filename){
     return function (callback){
         return fs.readFile(filename, callback)
@@ -23,7 +23,7 @@ var readFile = function (filename){
 ```
 
 readFile如何调用和执行呢？如下:
-```JavaScript
+```javascript
 readFile('./package.json')((err, str) => {
     console.log(str.toString())
     })
@@ -41,7 +41,7 @@ Generator是从ECMAScript6里引入的新概念。
 
 一个Generator函数示例:
 
-```JavaScript
+```javascript
 function* readFiles(){
     let r1 = yield readFile('./package.json')
     let r2 = yield readFile('./pom.xml')
@@ -50,7 +50,7 @@ function* readFiles(){
 
 如果要调用这个Generator函数使其执行完毕并获取结果, 可以用下面的代码:
 
-```JavaScript
+```javascript
 let g = readFiles()
 let r1 = g.next()
 r1.value(function (err, data){
@@ -74,7 +74,7 @@ Generator自动执行应运而生。
 
 Generator自动执行器的核心代码如下:
 
-```JavaScript
+```javascript
 function run(fn){
     let gen = fn();
     function next(err, data){
@@ -92,7 +92,7 @@ function run(fn){
 
 调用就是简单的一行:
 
-```JavaScript
+```javascript
 run(readFiles)
 ```
 
@@ -102,7 +102,7 @@ run(readFiles)
 
 第一部分的readFile thunk函数可以改写为基于Promise的方式:
 
-``` JavaScript
+``` javascript
 function readFile(fileName){
     return new Promise((resolve, reject) => {
         fs.readFile(fileName, (error, data) => {
