@@ -2,7 +2,7 @@
 title: 最近学习maven的一些记录
 layout: post
 categories: record
-tags: maven 包管理 java
+tags: Maven 包管理 Java
 author: John He
 ---
 

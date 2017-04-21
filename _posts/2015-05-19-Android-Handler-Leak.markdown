@@ -1,8 +1,8 @@
 ---
 title: Android Handler Leak原理和解决方案
 layout: post
-tags:
-  - Android
+categories: Android
+tags: Android
 ---
 
 Android的应用程序开发有一个著名的Handler Leak问题。
