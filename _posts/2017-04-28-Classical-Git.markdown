@@ -10,5 +10,4 @@ author: John He
 {:toc}
 
 
-![Image of GitHub Dev Model]
-(https://raw.githubusercontent.com/johnhx/johnhx.github.io/master/img/github_base_model.png)
+![Image of GitHub Dev Model](https://raw.githubusercontent.com/johnhx/johnhx.github.io/master/img/github_base_model.png)
