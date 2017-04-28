@@ -11,4 +11,4 @@ author: John He
 
 
 ![Image of GitHub Dev Model]
-(http://johnhx.github.io/img/github_base_model.jpg)
+(https://raw.githubusercontent.com/johnhx/johnhx.github.io/master/img/github_base_model.png)
