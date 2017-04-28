@@ -132,7 +132,7 @@ if (EnumProcessModules(hProcess, hMods, sizeof(hMods), &cbNeeded)) {
                             strcpy(ServAddrName, "<unknown>");
                         }
  
-                        printf("server ip: %s, client ip: %s\n", ServAddrName, ClientAddrName);                         
+                        printf("server ip: %s, client ip: %s\n", ServAddrName, ClientAddrName);
                     }
                 }
             }
