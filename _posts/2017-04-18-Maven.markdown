@@ -39,11 +39,11 @@ Maven有一个生命周期的概念，有三套(这个量词是"套")：
 ## 以目标(Goal)来构建(以Maven的Jetty插件举例)
 举例, 在“mvn jetty:run”命令中, run是jetty插件的一个目标(Goal)。
 在jetty插件的实现中，run这个目标的mojo声明为:
-```Java
+```java
 @execute phase="test-compile"
 ```
 并没有类似于下面这样的mojo声明:
-```Java
+```java
 @phase="compile"
 ```
 意味着run这个目标并没有被绑定在任何的阶段(Phase)上。
