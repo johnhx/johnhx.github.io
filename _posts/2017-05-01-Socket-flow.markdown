@@ -201,9 +201,9 @@ static const struct net_proto_family inet_family_ops = {
 
 ##### 1.4 关键的一步调用到pf->create, 按照上面的描述, 调用到了net/ipv4/Af_inet.c的inet_create方法.
 
-1. 先将struct socket的state设为SS_UNCONNECTED;
+###### 1. 先将struct socket的state设为SS_UNCONNECTED;
 
-2. 根据struct socket的type(SOCK_STREAM之类), 遍历inetsw[type], 找到对应到protocol的结构体;
+###### 2. 根据struct socket的type(SOCK_STREAM之类), 遍历inetsw[type], 找到对应到protocol的结构体;
 
 注意: 
 
@@ -233,21 +233,21 @@ static struct inet_protosw inetsw_array[] =
 }
 ```
 
-3. 将"对应到protocol的结构体"的ops赋给struct socket结构的ops. 
+###### 3. 将"对应到protocol的结构体"的ops赋给struct socket结构的ops. 
 
 例如如果type是SOCK_STREAM, protocol是TCP, 将&inet_stream_ops赋给struct socket结构的ops.
 
-4. 调用sk_alloc, 分配网络子系统核心(net/core)的数据结构struct sock ( 记录family, protocol到sk_family, sk_prot成员 )
+###### 4. 调用sk_alloc, 分配网络子系统核心(net/core)的数据结构struct sock ( 记录family, protocol到sk_family, sk_prot成员 )
 
 struct sock的sk_prot指向“对应到protocol的结构体”中的prot, 即&tcp_prot;
 
-5. 调用inet_sk, 分配inet层的数据结构struct inet_sock
+###### 5. 调用inet_sk, 分配inet层的数据结构struct inet_sock
 
 注意:
 
 如果是SOCK_RAW, 会把protocol信息直接存放在struct inet_sock的inet_num成员 ( local port? )
 
-6. 根据ipv4_config.no_pmtu_disc, 设置struct inet_sock的pmtudisc标志位DONT或者WANT.
+###### 6. 根据ipv4_config.no_pmtu_disc, 设置struct inet_sock的pmtudisc标志位DONT或者WANT.
 
 注意:
 
@@ -255,7 +255,7 @@ PMTUD全称Path MTU Discovery, 指的是在两个IP host间决定Maximum Transmi
 
 由此可见, 这个PMTUD在内核里面是可配的!!!
 
-7. 调用sock_init_data(struct socket, struct sock)
+###### 7. 调用sock_init_data(struct socket, struct sock)
 
 从函数原型上可以看出, 是借助struct socket来初始化网络层核心数据结构struct sock:
 
@@ -273,19 +273,19 @@ PMTUD全称Path MTU Discovery, 指的是在两个IP host间决定Maximum Transmi
 - sk->sk_sndtimeo ( SO_SNDTIMEO )
 - sk->sk_stamp ( 上一个packet收到的timestamp )
 
-8. sk->sk_backlog_rcv ( 收到backlog的回调函数 ) 初始化为sk->sk_prot->backlog_rcv
+###### 8. sk->sk_backlog_rcv ( 收到backlog的回调函数 ) 初始化为sk->sk_prot->backlog_rcv
 
 例如对于TCP, backlog_rcv指向net/ipv4/Tcp_ipv4.c的全局结构体struct proto tcp_prot中的tcp_v4_do_rcv
 
-9. inet->ut_ttl ( Unicast的TTL )为1
+###### 9. inet->ut_ttl ( Unicast的TTL )为1
 
-10. inet->mc_loop ( Multicast的loop ) 为1
+###### 10. inet->mc_loop ( Multicast的loop ) 为1
 
-11. inet->mc_ttl ( Multicast的TTL ), mc_all为1
+###### 11. inet->mc_ttl ( Multicast的TTL ), mc_all为1
 
-12. inet->mc_index ( Multicast的device index )为0
+###### 12. inet->mc_index ( Multicast的device index )为0
 
-13. 如果inet->inet_num ( local port? )不为空, 
+###### 13. 如果inet->inet_num ( local port? )不为空, 
 
 意味着该protocol允许并且已经在socket创建时指定local Port, 于是调用sk->sk_prot->hash(sk).
 
@@ -295,7 +295,7 @@ PMTUD全称Path MTU Discovery, 指的是在两个IP host间决定Maximum Transmi
 
 但是似乎这个hashtable元素只有32个, 为什么这么小? (待看)
 
-14. 调用sk->sk_prot->init, 例如对于TCP, 指向net/ipv4/Tcp_ipv4.c的全局结构体struct proto tcp_port中的tcp_v4_init_sock, 此方法完成该socket在内核网络子系统TCP层的初始化:
+###### 14. 调用sk->sk_prot->init, 例如对于TCP, 指向net/ipv4/Tcp_ipv4.c的全局结构体struct proto tcp_port中的tcp_v4_init_sock, 此方法完成该socket在内核网络子系统TCP层的初始化:
 
 注意: TCP层有自己的数据结构struct tcp_sock, 从struct sock强转而来
 
