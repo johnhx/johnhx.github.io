@@ -124,7 +124,7 @@ int protocol
 
 Socket系统调用定义在内核的网络子系统顶层代码中(net\socket.c).
 
-### 一、首先调用到sock_create
+### 一. 首先调用到sock_create
 ```c
 sock_create(family, type, protocol, &sock)
 ```
@@ -318,12 +318,12 @@ keepalive <-> net/ipv4/tcp_timer.c的tcp_keepalive_timer
 
 至此pf->create调用结束, 也就是inet_create方法调用结束.
 
-##### 调用secutiry子系统的方法secutiry_ops->socket_post_create去security子系统折腾了一圈;
+##### 1.5 调用secutiry子系统的方法secutiry_ops->socket_post_create去security子系统折腾了一圈;
 
 至此__sock_create调用结束.
 
 至此socket系统调用中sock_create调用结束.
 
-### 然后调用sock_map_fd将struct socket挂接到fd供进程使用.
+### 二. 然后调用sock_map_fd将struct socket挂接到fd供进程使用.
 
 至此, 整个socket系统调用结束.
