@@ -117,9 +117,7 @@ subsys_initcall(sysctl_init);
 ## Socket系统调用流程
 Socket系统调用传入的参数为:
 ```c
-int family
-int type
-int protocol
+int socket(int family, int type, int protocol)
 ```
 
 Socket系统调用定义在内核的网络子系统顶层代码中(net\socket.c).
@@ -165,7 +163,9 @@ __sock_create(current->nsproxy->net_ns, family, type, protocol, res, 0);
 ##### 1.1 调用secutiry子系统的方法secutiry_ops->socket_create去security子系统折腾了一圈;
 
 ##### 1.2 sock_alloc: 分配struct socket
+
 ###### 1.2.1 在sockfs中分配一个inode ( sockfs的初始化详见net/socket.c的sock_init方法 )
+
 ###### 1.2.2 基于inode结构取到socket结构 ( 怎么取到的? 这里使用的是著名的container_of宏 )
 
 > container_of宏实现如下:
@@ -212,11 +212,12 @@ inetsw是一个链表数组, key为SOCK_STREAM, SOCK_DGRAM, SOCK_RAW等等.
 inetsw的初始化在net/ipv4/Af_inet.c的inet_init方法中:
 
 - 先初始化inesw为SOCK_STREAM/SOCK_DGRAM/SOCK_RAW等作为key的list_head数组;
+
 - 遍历inetsw_array, 将其挂入inetsw中. 
 
-inetsw_array封装了TCP, UDP, ICMP等协议的处理逻辑, 
+inetsw_array的元素封装了TCP, UDP, PING, RAW等协议, 
 
-为上文中描述的"对应到protocol的结构体", inetsw_array的元素结构如下:
+上文中描述的"对应到protocol的结构体", inetsw_array的元素结构如下:
 ```c
 static struct inet_protosw inetsw_array[] =
 {
@@ -237,11 +238,43 @@ static struct inet_protosw inetsw_array[] =
 
 例如如果type是SOCK_STREAM, protocol是TCP, 将&inet_stream_ops赋给struct socket结构的ops.
 
+各个数据结构关系如下图:
+
+![Image of socket inet](https://raw.githubusercontent.com/johnhx/johnhx.github.io/master/img/socket_inet.png)
+
+
 ###### 4. 调用sk_alloc, 分配网络子系统核心(net/core)的数据结构struct sock ( 记录family, protocol到sk_family, sk_prot成员 )
+
+这里所做的sk_alloc调用, 传入的answer_prot指向tcp_prot, 故分配的大小为struct tcp_sock.
+(见net\ipv4\tcp_ipv4.c的struct proto tcp_prot结构体的obj_size字段):
+
+```c
+struct proto tcp_prot = {
+    ...
+    .obj_size = sizeof(struct tcp_sock),
+    ...
+}
+```
+
+sk_alloc的代码如下:
+
+```c
+sock->ops = answer->ops;
+answer_prot = answer->prot;
+...
+sk = sk_alloc(net, PF_INET, GFP_KERNEL, answer_prot);
+```
 
 struct sock的sk_prot指向“对应到protocol的结构体”中的prot, 即&tcp_prot;
 
-###### 5. 调用inet_sk, 分配inet层的数据结构struct inet_sock
+###### 5. 然后直接将struct sock强转为struct inet_sk(调用inet_sk), 设置一些inet的参数.
+
+注意1:
+
+之所以struct sock可以强转为struct inet_sk, 是因为在sk_alloc()时分配的是struct tcp_sock结构大小(但是返回的是struct sock). tcp_sock, inet_sock, 
+
+sock三个结构体的关系如下:
+
 
 注意:
 
