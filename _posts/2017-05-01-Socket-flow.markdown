@@ -275,7 +275,7 @@ struct sock的sk_prot指向“对应到protocol的结构体”中的prot, 即&tc
 
 sock三个结构体的关系如下:
 
-![Image of socket structur](https://raw.githubusercontent.com/johnhx/johnhx.github.io/master/img/socket_structure.png)
+![Image of socket structur](https://raw.githubusercontent.com/johnhx/johnhx.github.io/master/img/sock_structure.png)
 
 
 注意2:
