@@ -256,7 +256,7 @@ struct proto tcp_prot = {
 }
 ```
 
-sk_alloc的代码如下:
+调用sk_alloc的代码如下:
 
 ```c
 sock->ops = answer->ops;
@@ -275,8 +275,10 @@ struct sock的sk_prot指向“对应到protocol的结构体”中的prot, 即&tc
 
 sock三个结构体的关系如下:
 
+![Image of socket structur](https://raw.githubusercontent.com/johnhx/johnhx.github.io/master/img/socket_structure.png)
 
-注意:
+
+注意2:
 
 如果是SOCK_RAW, 会把protocol信息直接存放在struct inet_sock的inet_num成员 ( local port? )
 
