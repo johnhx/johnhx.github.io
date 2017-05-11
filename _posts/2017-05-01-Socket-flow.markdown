@@ -1,5 +1,5 @@
 ---
-title: Linux Socket系统调用内核源码分析
+title: Linux内核网络子系统源码分析(1) -- socket系统调用和关键数据结构
 layout: post
 categories: Linux
 tags: Linux Kernel Network Socket
@@ -11,7 +11,7 @@ author: John He
 
 这部分代码看了有几年了，归纳总结的想法也想了几年，刚好最近比较空，把这部分代码流程梳理了一下，总结成一篇blog，记录一下。
 
-## 内核初始化相关的流程
+## 内核初始化相关/网络子系统初始化
 内核初始化过程中，依次调到arch/<arch>/boot -> arch/<arch>/kernel -> start_kernel
 
 start_kernel最后调到do_basic_setup()(init/main.c):
@@ -115,12 +115,12 @@ subsys_initcall(sysctl_init);
 
 
 ## Socket系统调用流程
-Socket系统调用传入的参数为:
+Socket系统调用的作用是创建一个socket, 该系统调用传入的参数为:
 ```c
 int socket(int family, int type, int protocol)
 ```
 
-Socket系统调用定义在内核的网络子系统顶层代码中(net\socket.c).
+Socket系统调用实现入口位于Linux内核的网络子系统顶层代码中(net\socket.c).
 
 ### 一. 首先调用到sock_create
 ```c
@@ -164,7 +164,7 @@ __sock_create(current->nsproxy->net_ns, family, type, protocol, res, 0);
 
 ##### 1.2 sock_alloc: 分配struct socket
 
-###### 1.2.1 在sockfs中分配一个inode ( sockfs的初始化详见net/socket.c的sock_init方法 )
+###### 1.2.1 通过sockfs中分配一个inode ( sockfs的初始化详见net/socket.c的sock_init方法 )
 
 ###### 1.2.2 基于inode结构取到socket结构 ( 怎么取到的? 这里使用的是著名的container_of宏 )
 
@@ -174,17 +174,19 @@ __sock_create(current->nsproxy->net_ns, family, type, protocol, res, 0);
 >    const typeof( ((type *)0)->member ) *__mptr = (ptr);    \
 >    (type *)( (char *)__mptr - offsetof(type,member) );})
 >```
->先new一个指针__mptr，类型同type的member, 指向源数据ptr;
+>先new一个指针__mptr，指针所指类型和type内的member成员一样, 并指向传入的待求container数据ptr;
 >
->该指针__mptr便存放着源数据ptr的内存地址, 并且有正确的类型;
+>该指针__mptr便存放着待求container的数据ptr的内存地址, 并且有正确的类型;
 >
->然后用这个内存地址减去member在type内部的偏移量, 便是包含ptr这个类型为type的结构体的起始地址, 强转为type指针类型, 即为结果.
+>然后用这个内存地址减去type内部的member成员的偏移量, 便是包含ptr这个类型为type的结构体的起始地址, 强转为type指针类型, 即为结果.
 
 通过调用container_of宏, 使用inode结构取到了socket结构, 返回.
 
 ##### 1.3 从全局net_families数组中根据下标family取到对应的struct net_proto_family结构pf;
 
-全局net_families数组通过sock_register/sock_unregister添加/删除元素. ( 最多40个元素, 可以理解为下层协议的数据结构, 比如ipv4, ipv6, netlink, appletalk, bluetooth等 )
+全局net_families数组是一个维护着系统全局所有网络簇信息的一个数组结构.
+
+net_families数组通过sock_register/sock_unregister添加/删除元素. ( 最多40个元素, 可以理解为下层协议的数据结构, 例如ipv4, ipv6, netlink, appletalk, bluetooth等, 本文后面部分采用ipv4作为示例. )
 
 sock_register/sock_unregister通常在net/xxx/Af_xxx.c中调用.
 
@@ -215,9 +217,9 @@ inetsw的初始化在net/ipv4/Af_inet.c的inet_init方法中:
 
 - 遍历inetsw_array, 将其挂入inetsw中. 
 
-inetsw_array的元素封装了TCP, UDP, PING, RAW等协议, 
+inetsw_array的元素封装了TCP, UDP, PING, RAW等协议, 即为上文中描述的"对应到protocol的结构体".
 
-上文中描述的"对应到protocol的结构体", inetsw_array的元素结构如下:
+inetsw_array的元素结构如下:
 ```c
 static struct inet_protosw inetsw_array[] =
 {
@@ -271,11 +273,15 @@ struct sock的sk_prot指向“对应到protocol的结构体”中的prot, 即&tc
 
 注意1:
 
-之所以struct sock可以强转为struct inet_sk, 是因为在sk_alloc()时分配的是struct tcp_sock结构大小(但是返回的是struct sock). tcp_sock, inet_sock, 
+之所以struct sock可以强转为struct inet_sk, 是因为在sk_alloc()时分配的是struct tcp_sock结构大小(但是返回的是struct sock). 
 
-sock三个结构体的关系如下:
+tcp_sock, inet_sock, sock三个结构体的关系为:
 
-![Image of socket structur](https://raw.githubusercontent.com/johnhx/johnhx.github.io/master/img/sock_structure.png)
+**tcp_sock 包含 inet_connection_sock 包含 inet_sock 包含 sock**
+
+图示如下:
+
+![Image of socket structure](https://raw.githubusercontent.com/johnhx/johnhx.github.io/master/img/sock_structure.png)
 
 
 注意2:
@@ -332,7 +338,7 @@ PMTUD全称Path MTU Discovery, 指的是在两个IP host间决定Maximum Transmi
 
 ###### 14. 调用sk->sk_prot->init, 例如对于TCP, 指向net/ipv4/Tcp_ipv4.c的全局结构体struct proto tcp_port中的tcp_v4_init_sock, 此方法完成该socket在内核网络子系统TCP层的初始化:
 
-注意: TCP层有自己的数据结构struct tcp_sock, 从struct sock强转而来
+注意: TCP层有自己的数据结构struct tcp_sock, 从struct sock强转而来(下图图示中"tcp_sock specified"部分为struct tcp_sock的专有数据, 内存布局于common字段的后面, 故可以使用强制类型转换于struct sock互转)
 
 - out_of_order_queue初始化 ( 该queue用于存放Out of order的segment )
 - 初始化三个timer: 
@@ -353,12 +359,30 @@ keepalive <-> net/ipv4/tcp_timer.c的tcp_keepalive_timer
 
 至此pf->create调用结束, 也就是inet_create方法调用结束.
 
+图示如下:
+
+![Image of struct socket initialization](https://raw.githubusercontent.com/johnhx/johnhx.github.io/master/img/socket_struct_init.png)
+
+
 ##### 1.5 调用secutiry子系统的方法secutiry_ops->socket_post_create去security子系统折腾了一圈;
 
 至此__sock_create调用结束.
 
 至此socket系统调用中sock_create调用结束.
 
-### 二. 然后调用sock_map_fd将struct socket挂接到fd供进程使用.
+### 二. 调用sock_map_fd将struct socket挂接到fd供进程使用.
+
+#### 1. 调用sock_alloc_file, 传入struct socket, struct file和flag
+
+将struct socket的file设为struct file;
+
+将struct file的private_data设为struct socket;
+
+这样struct socket和struct file便互相关联起来了.
+
+![Image of socket file](https://raw.githubusercontent.com/johnhx/johnhx.github.io/master/img/sock_file.png)
+
+
+#### 2. 调用fd_install将file descriptor加入fd array
 
 至此, 整个socket系统调用结束.
