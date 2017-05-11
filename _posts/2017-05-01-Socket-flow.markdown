@@ -1,7 +1,7 @@
 ---
 title: Linux内核网络子系统源码分析(1) -- socket系统调用和关键数据结构
 layout: post
-categories: Linux
+categories: Linux内核
 tags: Linux Kernel Network Socket
 author: John He
 ---
