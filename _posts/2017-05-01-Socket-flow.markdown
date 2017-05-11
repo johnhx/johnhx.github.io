@@ -380,7 +380,7 @@ keepalive <-> net/ipv4/tcp_timer.c的tcp_keepalive_timer
 
 这样struct socket和struct file便互相关联起来了.
 
-![Image of socket file](https://raw.githubusercontent.com/johnhx/johnhx.github.io/master/img/sock_file.png)
+![Image of socket file](https://raw.githubusercontent.com/johnhx/johnhx.github.io/master/img/socket_file.png)
 
 
 #### 2. 调用fd_install将file descriptor加入fd array
