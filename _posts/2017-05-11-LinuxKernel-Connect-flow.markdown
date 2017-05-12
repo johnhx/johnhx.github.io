@@ -72,19 +72,19 @@ err = inet_hash_connect(&tcp_death_row, sk);
 
 7. 调用tcp_connect方法
 
-7.1 分配struct sk_buff
+> 7.1 分配struct sk_buff
 
-7.2 在struct sk_buff中的tcp_skb_cb部分的tcp_flags字段, 设置SYN标志, 设置seq, end_seq, gso_* (什么是gso?)
+> 7.2 在struct sk_buff中的tcp_skb_cb部分的tcp_flags字段, 设置SYN标志, 设置seq, end_seq, gso_* (什么是gso?)
 
-7.3 根据sysctl_tcp_ecn, 设置tcp_flags字段中的ECN, CWR标志
+> 7.3 根据sysctl_tcp_ecn, 设置tcp_flags字段中的ECN, CWR标志
 
-7.4 个体struct sk_buff打上时间戳
+> 7.4 个体struct sk_buff打上时间戳
 
-7.5 减struct sk_buff引用
+> 7.5 减struct sk_buff引用
 
-7.6 调用__skb_queue_tail, 将struct sk_buff挂到struct sock的sk_write_queue
+> 7.6 调用__skb_queue_tail, 将struct sk_buff挂到struct sock的sk_write_queue
 
-7.7 调用tcp_transmit_skb方法进入**tcp层实际的处理和传输过程**
+> 7.7 调用tcp_transmit_skb方法进入**tcp层实际的处理和传输过程**
 
 ### tcp_transmit_skb流程
 
@@ -132,3 +132,7 @@ struct net_device -> struct netdev_queue -> struct Qdisc
 调用struct Qdisc的enqueue方法将struct sk_buff挂入队列中.
 
 struct Qdisc有多种实现, 实现在net\sched\sch_*.c中, 有fifo, generic, dsmark, cbq, choke等(留待日后细分析).
+
+一个connect过程的调用框图如下:
+
+![Image of connect sequence](https://raw.githubusercontent.com/johnhx/johnhx.github.io/master/img/connect_sequence.png)
