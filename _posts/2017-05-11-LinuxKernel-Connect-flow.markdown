@@ -42,9 +42,9 @@ sock->ops->connect指向inet_stream_ops的connect, 即inet_stream_connect.
 
 ### inet_stream_connect流程
 
-1. 取struct socket内部的struct sock成员指针指向的struct sock; (见文首图很清晰)
+#### 1. 取struct socket内部的struct sock成员指针指向的struct sock; (见文首图很清晰)
 
-2. 根据struct socket的socket_state类型字段:
+#### 2. 根据struct socket的socket_state类型字段:
 
 - SS_CONNECTED/SS_CONNECTING(略过)
 
@@ -94,23 +94,23 @@ tcp_transmit_skb方法接口如下:
 static int tcp_transmit_skb(struct sock *sk, struct sk_buff *skb, int clone_it, gfp_t gfp_mask)
 ```
 
-1. 如果clone_it为1，调用skb_clone方法clone一个sk_buff, 注意此处只是克隆数据结构，packet data只是加引用计数;
+#### 1. 如果clone_it为1，调用skb_clone方法clone一个sk_buff, 注意此处只是克隆数据结构，packet data只是加引用计数;
 
 克隆的struct sk_buff不属于任何socket.
 
-2. 计算tcp头部空间大小tcp_header_size: sizeof(struct tcphdr) + tcp_options_size
+#### 2. 计算tcp头部空间大小tcp_header_size: sizeof(struct tcphdr) + tcp_options_size
 
-3. 使用tcp_header_size来构建tcp头部, 包括设置source, dest, seq, ack_seq, window等
+#### 3. 使用tcp_header_size来构建tcp头部, 包括设置source, dest, seq, ack_seq, window等
 
-4. 调用struct inet_connection_sock的icsk_af_ops的queue_xmit方法 ( 该函数指针在tcp_v4_init_sock方法中初始化, 指向ip_output.c的ip_queue_xmit )
+#### 4. 调用struct inet_connection_sock的icsk_af_ops的queue_xmit方法 ( 该函数指针在tcp_v4_init_sock方法中初始化, 指向ip_output.c的ip_queue_xmit )
 
 ### ip_queue_xmit方法 (IP层实际的处理和传输过程)
 
-1. 加ip头部
+#### 1. 加ip头部
 
-2. ip_local_out -> __ip_local_out -> nf_hook(IPV4, LOCAL_OUT, ...), 此处进入netfilter子系统, 若允许pass, 返回1, 调用dst_output
+#### 2. ip_local_out -> __ip_local_out -> nf_hook(IPV4, LOCAL_OUT, ...), 此处进入netfilter子系统, 若允许pass, 返回1, 调用dst_output
 
-3. dst_output方法:
+#### 3. dst_output方法:
 ```c
 return skb_dst(skb)->output(skb);
 ```
@@ -119,11 +119,11 @@ dst_entry的output方法函数指针在net\ipv4\route.c的__mkroute_output得到
 
 ### ip_output方法
 
-1. 获取struct net_device
+#### 1. 获取struct net_device
 
-2. ip_finish_output -> 是否需要分片? ip_fragment() : ip_finish_output2()
+#### 2. ip_finish_output -> 是否需要分片? ip_fragment() : ip_finish_output2()
 
-3. neigh_output -> neigh_hh_output, 调用到dev_queue_xmit方法
+#### 3. neigh_output -> neigh_hh_output, 调用到dev_queue_xmit方法
 
 ### dev_queue_xmit方法
 
