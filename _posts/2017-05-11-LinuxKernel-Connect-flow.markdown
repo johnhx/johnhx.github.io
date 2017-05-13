@@ -52,39 +52,39 @@ sock->ops->connect指向inet_stream_ops的connect, 即inet_stream_connect.
 
 ### tcp_v4_connect流程
 
-1. 调用ip_route_connect
+#### 1. 调用ip_route_connect
 
-2. 设置默认TCP_MSS  ( 536 )
+#### 2. 设置默认TCP_MSS  ( 536 )
 
-3. tcp状态设为TCP_SYN_SENT
+#### 3. tcp状态设为TCP_SYN_SENT
 ```c
 tcp_set_state(sk, TCP_SYN_SENT);
 ```
 
-4. 将struct sock插入bind链表中
+#### 4. 将struct sock插入bind链表中
 ```c
 err = inet_hash_connect(&tcp_death_row, sk);
 ```
 
-5. 调用ip_route_newports, 完成destination route;
+#### 5. 调用ip_route_newports, 完成destination route;
 
-6. 为tcp生成sequence number, 赋给struct sock的write_seq成员;
+#### 6. 为tcp生成sequence number, 赋给struct sock的write_seq成员;
 
-7. 调用tcp_connect方法
+#### 7. 调用tcp_connect方法
 
-> 7.1 分配struct sk_buff
+##### 7.1 分配struct sk_buff
 
-> 7.2 在struct sk_buff中的tcp_skb_cb部分的tcp_flags字段, 设置SYN标志, 设置seq, end_seq, gso_* (什么是gso?)
+##### 7.2 在struct sk_buff中的tcp_skb_cb部分的tcp_flags字段, 设置SYN标志, 设置seq, end_seq, gso_* (什么是gso?)
 
-> 7.3 根据sysctl_tcp_ecn, 设置tcp_flags字段中的ECN, CWR标志
+##### 7.3 根据sysctl_tcp_ecn, 设置tcp_flags字段中的ECN, CWR标志
 
-> 7.4 个体struct sk_buff打上时间戳
+##### 7.4 个体struct sk_buff打上时间戳
 
-> 7.5 减struct sk_buff引用
+##### 7.5 减struct sk_buff引用
 
-> 7.6 调用__skb_queue_tail, 将struct sk_buff挂到struct sock的sk_write_queue
+##### 7.6 调用__skb_queue_tail, 将struct sk_buff挂到struct sock的sk_write_queue
 
-> 7.7 调用tcp_transmit_skb方法进入**tcp层实际的处理和传输过程**
+##### 7.7 调用tcp_transmit_skb方法进入**tcp层实际的处理和传输过程**
 
 ### tcp_transmit_skb流程
 
