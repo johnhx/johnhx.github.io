@@ -39,7 +39,7 @@ Mem:          2003       1706        296         20        107        405
 Swap:            0          0          0
 ```
 
-top命令发现某java进程的虚拟内存达到了6MB之多, 驻留内存站到了700+MB, 对于2GB的ec2来说比例相当高了.
+top命令发现某java进程的虚拟内存达到了6GB之多, 驻留内存站到了700+MB, 对于2GB的ec2来说比例相当高了.
 
 ```shell
 top - 09:19:19 up 82 days, 15:01,  1 user,  load average: 0.58, 0.56, 0.35
@@ -92,13 +92,13 @@ ec2-user 26202 26167  0 09:19 pts/0    00:00:00 grep --color=auto 8478
 
 - 用jmap把问题进程的heap抓下来:
 
-```shell
-jmap -heap:format=b 8478
-```
+  ```shell
+  jmap -heap:format=b 8478
+  ```
 
-jmap是JDK附带的工具, 可以通过指定PID把对应java进程的heap和memory dump出来.
+  jmap是JDK附带的工具, 可以通过指定PID把对应java进程的heap和memory dump出来.
 
-上面的jmap命令运行结束后, 会在当前目录生成heap.bin文件.
+  上面的jmap命令运行结束后, 会在当前目录生成heap.bin文件.
 
 - 将heap.bin下载到安装有Eclipse Memory Analysis Tool的机器上, 直接打开heap.bin
 
@@ -106,7 +106,7 @@ jmap是JDK附带的工具, 可以通过指定PID把对应java进程的heap和mem
 
 - 分析后发现大量的ChannelSftp对象存放在一个vector里, 被强引用, 占据了堆空间, 没有及时释放, 也无法被GC回收.
 
-跟踪代码, 发现在业务状态所对应的CHECK状态时的动作是创建一个ssh Session连到ec2上, 检查对应业务状态的log文件是否包含有">>>SUCCESS<<<"字串.
+跟踪代码, 发现在业务状态所对应的CHECK状态时的动作是创建一个ssh Session连到ec2上, 检查对应业务状态的log文件是否包含有"SUCCESS"字串.
 
 创建ssh Session的动作, 是通过com.jcraft.jsch包来做的, 流程如下:
 
@@ -119,7 +119,7 @@ jmap是JDK附带的工具, 可以通过指定PID把对应java进程的heap和mem
 代码逻辑如下:
 
 ```java
-public String readTextFile(SshInfo sshInfo, String path){}
+public String readTextFile(SshInfo sshInfo, String path){
     ...
     try{
         Session session = getSessionConnected(sshInfo);
@@ -136,16 +136,16 @@ public String readTextFile(SshInfo sshInfo, String path){}
 ```
 
 
-com.jscraft.jsch是开源的包, 下载了一份源码.
+com.jscraft.jsch是开源的第三方包, 下载了一份源码.
 
-跟踪到了ChannelSftp, 发现:
+跟踪到ChannelSftp类, 发现:
 
-- 在Channel基类的构造函数中, 将Channel对象自身加到一个static Vector pool中去;
+- 在ChannelSftp的Channel基类的构造函数中, 将Channel对象自身加到一个static Vector pool中去;
 
-- 在Channel基类的del方法中, 才将该Channel对象从pool中移除; ( 移除后强引用关系丢失, GC自动回收Channel对象 )
+- 在Channel基类的del方法中, 才将该Channel对象从pool中移除; ( 移除后强引用关系丢失, GC才会自动回收Channel对象 )
 
-继续跟踪在何处调到del, 发现disconnect方法调到.
+继续跟踪在何处调到del, 发现在Channel的disconnect方法会调到del方法.
 
-逻辑和rootcause很清晰了, ChannelSftp用完后要显式的调用disconnect, ChannelSftp对象才能被GC回收.
+逻辑和rootcause很清晰了, *ChannelSftp用完后要显式的调用disconnect, ChannelSftp对象才能被GC回收.*
 
 真是一个低级错误.
