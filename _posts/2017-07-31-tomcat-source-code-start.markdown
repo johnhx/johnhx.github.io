@@ -49,17 +49,17 @@ $JRE_HOME/bin/java ... org.apache.catalina.startup.Bootstrap ... start
  + 创建catalinaLoader
  + 创建sharedLoader
  
- 注意: commonLoader是catalinaLoader和sharedLoader的父Loader.
+   注意: commonLoader是catalinaLoader和sharedLoader的父Loader.
 
->以上创建loader都是通过调用createClassLoader方法:
+>  以上创建loader都是通过调用createClassLoader方法:
 >
->1. 获取name + “.loader"配置属性, 对于commonLoader, 就是common.loader
+>  1. 获取name + “.loader"配置属性, 对于commonLoader, 就是common.loader
 >
->2. 根据*.loader生成repository列表, 稍后找ClassLoader需要用到
+>  2. 根据*.loader生成repository列表, 稍后找ClassLoader需要用到
 >
->3. 调用ClassLoaderFactory.createClassLoader方法
+>  3. 调用ClassLoaderFactory.createClassLoader方法
 >
->4. 生成java.net.URLClassLoader对象
+>  4. 生成java.net.URLClassLoader对象
 
  + 将catalinaLoader设为currentThread的contextClassLoader
 
@@ -71,12 +71,12 @@ $JRE_HOME/bin/java ... org.apache.catalina.startup.Bootstrap ... start
 
 * 通过反射调用catalinaDaemon的start方法 (org.apache.catalina.startup.Catalina类实例的startup方法 ):
 
- + org.apache.catalina.startup.Catalina类startup方法流程
-  
-  - load()
-  
-  - Server的start()方法
-  
-  - 如果await设为true, 则调用await(), stop()
+    - org.apache.catalina.startup.Catalina类startup方法流程
+        
+        - load()
+        
+        - Server的start()方法
+        
+        - 如果await设为true, 则调用await(), stop()
 
 
