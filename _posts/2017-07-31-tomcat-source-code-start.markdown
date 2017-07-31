@@ -136,7 +136,7 @@ Lifecycle的状态机如下:
 
     2.5 调用services的init() ( services是由conf\server.xml的<Service>节点添加 )
 
-        <u>StandardService的init()流程:</u>
+    <u>StandardService的init()流程:</u>
 
         2.5.1 调用Executor的init 
 
@@ -152,9 +152,7 @@ Lifecycle的状态机如下:
         
         ```xml
         ...
-            <Connector port="8080" protocol="HTTP/1.1"
-                    connectionTimeout="20000"
-                    redirectPort="8443" />
+        <Connector port="8080" protocol="HTTP/1.1" connectionTimeout="20000" redirectPort="8443" />
         ...
         ```
 
@@ -238,11 +236,11 @@ Lifecycle的状态机如下:
 
         <u>/AbstractHttp11JsseProtocol的init()流程</u>
 
-    <u>/Http11NioProtocol的init流程</u>
+        <u>/Http11NioProtocol的init流程</u>
 
-<u>/Connector的init流程</u>
+        <u>/Connector的init流程</u>
 
-<u>/StandardService的init()流程</u>
+    <u>/StandardService的init()流程</u>
 
 3. Lifecycle状态迁移为INITIALIZED
 
