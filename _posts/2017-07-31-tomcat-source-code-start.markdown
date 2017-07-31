@@ -44,22 +44,22 @@ $JRE_HOME/bin/java ... org.apache.catalina.startup.Bootstrap ... start
 
 #### init()
 
-* initClassLoaders()
+##### initClassLoaders()
  + 创建commonLoader
  + 创建catalinaLoader
  + 创建sharedLoader
  
    注意: commonLoader是catalinaLoader和sharedLoader的父Loader.
 
->  以上创建loader都是通过调用createClassLoader方法:
+>以上创建loader都是通过调用createClassLoader方法:
 >
->  1. 获取name + “.loader"配置属性, 对于commonLoader, 就是common.loader
+>1. 获取name + “.loader"配置属性, 对于commonLoader, 就是common.loader
 >
->  2. 根据*.loader生成repository列表, 稍后找ClassLoader需要用到
+>2. 根据*.loader生成repository列表, 稍后找ClassLoader需要用到
 >
->  3. 调用ClassLoaderFactory.createClassLoader方法
+>3. 调用ClassLoaderFactory.createClassLoader方法
 >
->  4. 生成java.net.URLClassLoader对象
+>4. 生成java.net.URLClassLoader对象
 
  + 将catalinaLoader设为currentThread的contextClassLoader
 
@@ -69,14 +69,256 @@ $JRE_HOME/bin/java ... org.apache.catalina.startup.Bootstrap ... start
 
  + catalinaDaemon赋值为org.apache.catalina.startup.Catalina的instance
 
-* 通过反射调用catalinaDaemon的start方法 (org.apache.catalina.startup.Catalina类实例的startup方法 ):
+##### 通过反射调用catalinaDaemon的start方法 (org.apache.catalina.startup.Catalina类实例的startup方法 ):
 
-    - org.apache.catalina.startup.Catalina类startup方法流程
+org.apache.catalina.startup.Catalina类startup方法流程:
+
+###### load()
+  
+1.1 initDirs(): 检查系统配置java.io.tmpdir
+
+1.2 createStarterDigest
+创建org.apache.tomcat.util.digest实例
+注意: Digester是个维护XML和Java对象的库( https://commons.apache.org/proper/commons-digester/guide/core.html ), 动态添加了很多规则, 如:
+- 当XML Parser扫描到<Server>时, 创建org.apache.catalina.core.StandardServer实例, 保持其生命周期到</Server>
+- 当XML Parser扫描到<Server><GlobalNamingResources>时, 创建org.apache.catalina.deploy.NamingResourceImpl实例
+...
+( 详见Catalina.java\createStarterDigester方法 )
+个人感受: Digester是一个另类的依赖注入模型
+
+1.3 取conf/server.xml, 并由digest进行解析
+```Java
+digest.push(this)           // 将Catalina.java类实例作为Digest的object stack的root
+digest.parse(inputSource)   // 解析
+```
+
+这样Catalina.java的getServer()返回的便是Digestor的规则所创建的Server实例( org.apache.catalina.core.StandardServer )
+
+1.4 调用StandardServer的init
+StandardServer的继承关系如下图:
+
+
+![Image of StandardServer](https://raw.githubusercontent.com/johnhx/johnhx.github.io/master/img/tomcat_1_standardserver.png)
+
+
+Lifecycle的状态机如下:
+
+
+![Image of Lifecycle State Machine](https://raw.githubusercontent.com/johnhx/johnhx.github.io/master/img/tomcat_1_lifecyclestate.png)
+
+
+** 调用StandardServer的init, 但是因为StandardServer没有init方法, 实际调用到的是LifecycleBase的init: **
+
+<u>LifecycleBase的init()流程:</u>
+
+1. Lifecycle状态迁移为INITIALIZING
+
+2. 调用initInternal(), 调用到的是StandardServer的initInternal:
+
+2.1 新建StringCache对象, 注册Catalina:type=StringCache到MBean Server;
+
+2.2 新建MBeanFactor对象, 将container设置为当前的StandardServer实例, 注册Catalina:type=MBeanFactory到MBean Server;
+
+2.3 调用NamingResourceImpl的initInternal:
+
+2.3.1 为resources, env, resourceLinks调用createMBean
+
+2.4 把common和shared的classes添加到ExtensionValidator
+
+2.5 调用services的init() ( services是由conf\server.xml的<Service>节点添加 )
+
+<u>StandardService的init()流程:</u>
+
+2.5.1 调用Executor的init 
+注意: Executor是在被Digestor在解析conf\server.xml时, 解析到<Server><Service><Executor>时添加, <Executor>用于定义线程池.
+
+2.5.2 初始化MapperListener实例 ( 用于listen virtualhosts的配置改变 )
+
+2.5.3 调用Connector的init
+注意: Connector是在被Digestor在解析conf\server.xml时, 解析到<Server><Service><Connector>时添加. 
+
+Digester在XML Parser到如下节点时:
+```XML
+...
+    <Connector port="8080" protocol="HTTP/1.1"
+               connectionTimeout="20000"
+               redirectPort="8443" />
+...
+```
+
+调用ConnectorCreateRule的begin()方法, 创建Connector对象, 放入digester的object stack顶.
+
+<u>创建Connector对象流程:</u>
+
+1. 获取传入的protocol ( "HTTP/1.1", "AJP/1.3" )
+
+2. 加载protocolHandlerClassName类 ( org.apache.coyote.http11.Http11NioProtocol )
+
+3. newInstance创建Http11NioProtocol类实例, 赋值给this.protocolHandler
+
+<u>/创建Connector对象流程</u>
+
+<u>Connector的init流程:</u>
+
+1. 创建CoyoteAdapter类实例, 赋值给protocolHandler的Adapter；
+
+2. 初始化protocolHandler ( protocolHandler.init, 即调到Http11NioProtocol的init )
+
+<u>Http11NioProtocol的init流程:</u>
+
+Http11NioProtocol的类结构如下:
+
+
+![Image of NioProtocol](https://raw.githubusercontent.com/johnhx/johnhx.github.io/master/img/tomcat_1_nioprotocol.png)
+
+
+**Http11NioProtocol类自身没有init方法, 故init方法调到的是父类AbstractHttp11JsseProtocol的init:**
+
+<u>AbstractHttp11JsseProtocol的init()流程:</u>
+
+1. 获取SSLImplementation类实例
+
+2. AbstractProtocol的init方法:
+
+<u>AbstractProtocol的init()流程:</u>
+
+2.1 生成Catalina:type=ProtocolHandler,port=8080,address=xxx的ObjectName实例, 注册到MBean Server
+
+2.2 生成Catalina:type=ThreadPool,name=xxx的ObjectName实例, 注册到MBean Server
+
+2.3 生成Catalina:type=GlobalRequestProcessor,name=xxx的ObjectName实例, 注册到MBean Server
+
+2.4 调用endpoint的init()方法, 这里endpoint指向NioEndpoint实例:
+NioEndpoin的init()流程
+
+2.4.1 调用bind()方法 ( 调到NioEndpoint的bind方法 ):
+
+2.4.1.1 java.nio的调用:
+ServerSocketChannel.open() -> 
+bind, configureBlocking, setSoTimeout
+
+2.4.1.2 org.apache.tomcat.util.net.NioSelectorPool的open调用
+
+- java.nio.channels.Selector的open调用
+
+- 新的org.apache.tomcat.util.net.NioBlockingSelector实例
+
+- NioBlockingSelector的open调用:
+
+-- 创建新的BlockPoller线程实例 ( NioBlockingSelector.BlockPoller-线程计数 )
+
+-- BlockPoller的start调用 ( run方法 ):
+
+--- while循环
+
+--- 先处理events( 读, 写事件 )
+
+--- select
+
+--- dispatch select出来的事件
+
+2.4.2 bindState置为BOUND_ON_INIT;
+
+<u>/NioEndpoin的init()流程</u>
+
+<u>/AbstractProtocol的init()流程</u>
+
+<u>/AbstractHttp11JsseProtocol的init()流程</u>
+
+<u>/Http11NioProtocol的init流程</u>
+
+<u>/Connector的init流程</u>
+
+<u>/StandardService的init()流程</u>
+
+3. Lifecycle状态迁移为INITIALIZED
+
+<u>/LifecycleBase的init()流程</u>
+
+###### Server的start()方法
+
+**调用StandardServer的start, 但是由于StandardServer没有start方法, 实际调用到的是LifecycleBase的start:**
+
+<u>LifecycleBase的start()流程:</u>
+
+1. Lifecycle状态迁移为STARTING_PREP
+
+2. 调用startInternal ( 这里调到StandardServer的startInternal方法 )
+
+<u>StandardServer的startInteral()流程</u>
+
+1. 触发Lifecycle的事件CONFIGURE_START_EVENT
+
+2. Lifecycle状态设为STARTING
+
+3. 调用service的start
+
+**调用StandardService的start，但是由于StandardService没有start方法, 实际调到LifecycleBase的start, 再调到StandardService的startInternal**
+
+
+
+![Image of StandardService](https://raw.githubusercontent.com/johnhx/johnhx.github.io/master/img/tomcat_1_standardservice.png)
+
+
+<u>StandardService的startInteral()流程</u>
+
+1. Lifecycle状态迁移为STARTING
+
+2. 调用Executor的start()
+
+3. MapperListener实例的start()
+
+4. Connector的start()
+
+<u>Connector的startInternal()流程 ( 继承自LifecycleBase和Lifecycle )</u>
+
+1. Lifecycle状态迁移为STARTING
+
+2. 调用protocolHanlder对象的start()
+
+<b>Http11NioProtocol的start()流程, 实际调到AbstractProtocol的start()流程
+endpoint的start(), 实际调到NioEndpoint的start()</b>
+
+<u>NioEndpoint的startInternal()流程</u>
+
+1. 创建processCache, 默认大小128, 默认最大500
+
+2. 创建eventCache, 默认大小128, 默认最大500
+
+3. 创建nioChannel, 默认大小128, 默认最大500
+
+4. 如果没有指定Executor, 创建新的Executor, 为new ThreadPoolExecutor, 默认核心线程数为10, 默认最大线程数为500, keepAliveTime为60... ( 此Executor为read/write用 )
+
+5. initializeConnectionLatch ( 限流用的? ), 默认连接数10000
+
+6. 创建Runnable的对象Poller, 个数为处理器的个数
+
+7. 启动Poller ( 每个Poller线程的命名规范为*-ClientPoller-* )
+
+8. 创建Acceptor的线程 ( Acceptor线程的命名规范为*-Acceptor-* )
+
+NioEndpoint从server的角度看来, 在startInternal流程结束后, 线程模型如下图:
+
+
+
+![Image of NioEndpoint](https://raw.githubusercontent.com/johnhx/johnhx.github.io/master/img/tomcat_1_nioendpoint.png)
+
+
+<u>/NioEndpoint的startInternal()流程</u>
+
+<u>/Connector的startInternal()流程 ( 继承自LifecycleBase和Lifecycle )</u>
+
+<u>/StandardService的startInteral()流程</u>
+
+<u>/StandardServer的startInteral()流程</u>
+
+3. Lifecycle状态迁移为STARTED
+
+<u>/LifecycleBase的start()流程</u>
+
+
+
         
-        - load()
-        
-        - Server的start()方法
-        
-        - 如果await设为true, 则调用await(), stop()
+###### 如果await设为true, 则调用await(), stop()
 
 
