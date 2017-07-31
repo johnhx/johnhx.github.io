@@ -24,7 +24,7 @@ startup.sh是一个shell脚本, 调用到的是bin\catalina.sh start, 后跟其�
 
 catalina.sh也是一个shell脚本, 这个脚本稍微复杂了一些, 不过主要都是在处理start, stop, run, debug以及其他参数, 对于start流程, 其核心是调用到下面的Java命令:
 
-```Shell
+```shell
 $JRE_HOME/bin/java ... org.apache.catalina.startup.Bootstrap ... start
 ```
 
@@ -44,7 +44,7 @@ $JRE_HOME/bin/java ... org.apache.catalina.startup.Bootstrap ... start
 
 #### init()
 
-##### initClassLoaders()
+##### 1. initClassLoaders()
  + 创建commonLoader
  + 创建catalinaLoader
  + 创建sharedLoader
@@ -69,25 +69,33 @@ $JRE_HOME/bin/java ... org.apache.catalina.startup.Bootstrap ... start
 
  + catalinaDaemon赋值为org.apache.catalina.startup.Catalina的instance
 
-##### 通过反射调用catalinaDaemon的start方法 (org.apache.catalina.startup.Catalina类实例的startup方法 ):
+##### 2. 通过反射调用catalinaDaemon的start方法 (org.apache.catalina.startup.Catalina类实例的startup方法 ):
 
 org.apache.catalina.startup.Catalina类startup方法流程:
 
-###### load()
+###### <b>load()</b>
   
 1.1 initDirs(): 检查系统配置java.io.tmpdir
 
 1.2 createStarterDigest
+
 创建org.apache.tomcat.util.digest实例
+
 注意: Digester是个维护XML和Java对象的库( https://commons.apache.org/proper/commons-digester/guide/core.html ), 动态添加了很多规则, 如:
+
 - 当XML Parser扫描到<Server>时, 创建org.apache.catalina.core.StandardServer实例, 保持其生命周期到</Server>
+
 - 当XML Parser扫描到<Server><GlobalNamingResources>时, 创建org.apache.catalina.deploy.NamingResourceImpl实例
+
 ...
+
 ( 详见Catalina.java\createStarterDigester方法 )
+
 个人感受: Digester是一个另类的依赖注入模型
 
 1.3 取conf/server.xml, 并由digest进行解析
-```Java
+
+```java
 digest.push(this)           // 将Catalina.java类实例作为Digest的object stack的root
 digest.parse(inputSource)   // 解析
 ```
@@ -95,6 +103,7 @@ digest.parse(inputSource)   // 解析
 这样Catalina.java的getServer()返回的便是Digestor的规则所创建的Server实例( org.apache.catalina.core.StandardServer )
 
 1.4 调用StandardServer的init
+
 StandardServer的继承关系如下图:
 
 
@@ -107,7 +116,7 @@ Lifecycle的状态机如下:
 ![Image of Lifecycle State Machine](https://raw.githubusercontent.com/johnhx/johnhx.github.io/master/img/tomcat_1_lifecyclestate.png)
 
 
-** 调用StandardServer的init, 但是因为StandardServer没有init方法, 实际调用到的是LifecycleBase的init: **
+<b> 调用StandardServer的init, 但是因为StandardServer没有init方法, 实际调用到的是LifecycleBase的init: </b>
 
 <u>LifecycleBase的init()流程:</u>
 
@@ -115,117 +124,121 @@ Lifecycle的状态机如下:
 
 2. 调用initInternal(), 调用到的是StandardServer的initInternal:
 
-2.1 新建StringCache对象, 注册Catalina:type=StringCache到MBean Server;
+    2.1 新建StringCache对象, 注册Catalina:type=StringCache到MBean Server;
 
-2.2 新建MBeanFactor对象, 将container设置为当前的StandardServer实例, 注册Catalina:type=MBeanFactory到MBean Server;
+    2.2 新建MBeanFactor对象, 将container设置为当前的StandardServer实例, 注册Catalina:type=MBeanFactory到MBean Server;
 
-2.3 调用NamingResourceImpl的initInternal:
+    2.3 调用NamingResourceImpl的initInternal:
 
-2.3.1 为resources, env, resourceLinks调用createMBean
+        2.3.1 为resources, env, resourceLinks调用createMBean
 
-2.4 把common和shared的classes添加到ExtensionValidator
+    2.4 把common和shared的classes添加到ExtensionValidator
 
-2.5 调用services的init() ( services是由conf\server.xml的<Service>节点添加 )
+    2.5 调用services的init() ( services是由conf\server.xml的<Service>节点添加 )
 
-<u>StandardService的init()流程:</u>
+        <u>StandardService的init()流程:</u>
 
-2.5.1 调用Executor的init 
-注意: Executor是在被Digestor在解析conf\server.xml时, 解析到<Server><Service><Executor>时添加, <Executor>用于定义线程池.
+        2.5.1 调用Executor的init 
 
-2.5.2 初始化MapperListener实例 ( 用于listen virtualhosts的配置改变 )
+        注意: Executor是在被Digestor在解析conf\server.xml时, 解析到<Server><Service><Executor>时添加, <Executor>用于定义线程池.
 
-2.5.3 调用Connector的init
-注意: Connector是在被Digestor在解析conf\server.xml时, 解析到<Server><Service><Connector>时添加. 
+        2.5.2 初始化MapperListener实例 ( 用于listen virtualhosts的配置改变 )
 
-Digester在XML Parser到如下节点时:
-```XML
-...
-    <Connector port="8080" protocol="HTTP/1.1"
-               connectionTimeout="20000"
-               redirectPort="8443" />
-...
-```
+        2.5.3 调用Connector的init
 
-调用ConnectorCreateRule的begin()方法, 创建Connector对象, 放入digester的object stack顶.
+        注意: Connector是在被Digestor在解析conf\server.xml时, 解析到<Server><Service><Connector>时添加. 
 
-<u>创建Connector对象流程:</u>
+        Digester在XML Parser到如下节点时:
+        
+        ```xml
+        ...
+            <Connector port="8080" protocol="HTTP/1.1"
+                    connectionTimeout="20000"
+                    redirectPort="8443" />
+        ...
+        ```
 
-1. 获取传入的protocol ( "HTTP/1.1", "AJP/1.3" )
+        调用ConnectorCreateRule的begin()方法, 创建Connector对象, 放入digester的object stack顶.
 
-2. 加载protocolHandlerClassName类 ( org.apache.coyote.http11.Http11NioProtocol )
+        <u>创建Connector对象流程:</u>
 
-3. newInstance创建Http11NioProtocol类实例, 赋值给this.protocolHandler
+        1. 获取传入的protocol ( "HTTP/1.1", "AJP/1.3" )
 
-<u>/创建Connector对象流程</u>
+        2. 加载protocolHandlerClassName类 ( org.apache.coyote.http11.Http11NioProtocol )
 
-<u>Connector的init流程:</u>
+        3. newInstance创建Http11NioProtocol类实例, 赋值给this.protocolHandler
 
-1. 创建CoyoteAdapter类实例, 赋值给protocolHandler的Adapter；
+        <u>/创建Connector对象流程</u>
 
-2. 初始化protocolHandler ( protocolHandler.init, 即调到Http11NioProtocol的init )
+        <u>Connector的init流程:</u>
 
-<u>Http11NioProtocol的init流程:</u>
+        1. 创建CoyoteAdapter类实例, 赋值给protocolHandler的Adapter；
 
-Http11NioProtocol的类结构如下:
+        2. 初始化protocolHandler ( protocolHandler.init, 即调到Http11NioProtocol的init )
+
+        <u>Http11NioProtocol的init流程:</u>
+
+        Http11NioProtocol的类结构如下:
 
 
-![Image of NioProtocol](https://raw.githubusercontent.com/johnhx/johnhx.github.io/master/img/tomcat_1_nioprotocol.png)
+        ![Image of NioProtocol](https://raw.githubusercontent.com/johnhx/johnhx.github.io/master/img/tomcat_1_nioprotocol.png)
 
 
-**Http11NioProtocol类自身没有init方法, 故init方法调到的是父类AbstractHttp11JsseProtocol的init:**
+        **Http11NioProtocol类自身没有init方法, 故init方法调到的是父类AbstractHttp11JsseProtocol的init:**
 
-<u>AbstractHttp11JsseProtocol的init()流程:</u>
+        <u>AbstractHttp11JsseProtocol的init()流程:</u>
 
-1. 获取SSLImplementation类实例
+        1. 获取SSLImplementation类实例
 
-2. AbstractProtocol的init方法:
+        2. AbstractProtocol的init方法:
 
-<u>AbstractProtocol的init()流程:</u>
+            <u>AbstractProtocol的init()流程:</u>
 
-2.1 生成Catalina:type=ProtocolHandler,port=8080,address=xxx的ObjectName实例, 注册到MBean Server
+            2.1 生成Catalina:type=ProtocolHandler,port=8080,address=xxx的ObjectName实例, 注册到MBean Server
 
-2.2 生成Catalina:type=ThreadPool,name=xxx的ObjectName实例, 注册到MBean Server
+            2.2 生成Catalina:type=ThreadPool,name=xxx的ObjectName实例, 注册到MBean Server
 
-2.3 生成Catalina:type=GlobalRequestProcessor,name=xxx的ObjectName实例, 注册到MBean Server
+            2.3 生成Catalina:type=GlobalRequestProcessor,name=xxx的ObjectName实例, 注册到MBean Server
 
-2.4 调用endpoint的init()方法, 这里endpoint指向NioEndpoint实例:
-NioEndpoin的init()流程
+            2.4 调用endpoint的init()方法, 这里endpoint指向NioEndpoint实例:
 
-2.4.1 调用bind()方法 ( 调到NioEndpoint的bind方法 ):
+                <u>NioEndpoin的init()流程</u>
 
-2.4.1.1 java.nio的调用:
-ServerSocketChannel.open() -> 
-bind, configureBlocking, setSoTimeout
+                2.4.1 调用bind()方法 ( 调到NioEndpoint的bind方法 ):
 
-2.4.1.2 org.apache.tomcat.util.net.NioSelectorPool的open调用
+                    2.4.1.1 java.nio的调用:
 
-- java.nio.channels.Selector的open调用
+                    ServerSocketChannel.open() -> bind, configureBlocking, setSoTimeout
 
-- 新的org.apache.tomcat.util.net.NioBlockingSelector实例
+                    2.4.1.2 org.apache.tomcat.util.net.NioSelectorPool的open调用
 
-- NioBlockingSelector的open调用:
+                    - java.nio.channels.Selector的open调用
 
--- 创建新的BlockPoller线程实例 ( NioBlockingSelector.BlockPoller-线程计数 )
+                    - 新的org.apache.tomcat.util.net.NioBlockingSelector实例
 
--- BlockPoller的start调用 ( run方法 ):
+                    - NioBlockingSelector的open调用:
 
---- while循环
+                        -- 创建新的BlockPoller线程实例 ( NioBlockingSelector.BlockPoller-线程计数 )
 
---- 先处理events( 读, 写事件 )
+                        -- BlockPoller的start调用 ( run方法 ):
 
---- select
+                            --- while循环
 
---- dispatch select出来的事件
+                            --- 先处理events( 读, 写事件 )
 
-2.4.2 bindState置为BOUND_ON_INIT;
+                            --- select
 
-<u>/NioEndpoin的init()流程</u>
+                            --- dispatch select出来的事件
 
-<u>/AbstractProtocol的init()流程</u>
+                2.4.2 bindState置为BOUND_ON_INIT;
 
-<u>/AbstractHttp11JsseProtocol的init()流程</u>
+                <u>/NioEndpoin的init()流程</u>
 
-<u>/Http11NioProtocol的init流程</u>
+            <u>/AbstractProtocol的init()流程</u>
+
+        <u>/AbstractHttp11JsseProtocol的init()流程</u>
+
+    <u>/Http11NioProtocol的init流程</u>
 
 <u>/Connector的init流程</u>
 
