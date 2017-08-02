@@ -38,11 +38,14 @@ disqus_shortname: johnhx
 baidu_tongji_id: 280a102c437f180df7be9ff3eb93da18
 google_analytics_id: UA-98292720-1 # google 分析追踪id
 
+highlighter: rouge
+
 # Build settings
 markdown: kramdown
 
 kramdown:
   input: GFM
+  syntax_highlighter: rouge
   hard_wrap: false
 gems:
   - jekyll-coffeescript
