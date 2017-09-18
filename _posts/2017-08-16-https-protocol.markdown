@@ -38,7 +38,7 @@ author: John He
 没什么好说的，见图:
 
 
-![Image of TCP Handshake](https://raw.githubusercontent.com/johnhx/johnhx.github.io/master/img/https/tcp_handshake.png)
+![Image of TCP Handshake](http://johnhx.github.io/img/https/tcp_handshake.png)
 
 
 ## 第二阶段 TLSv1.2协议握手
@@ -48,7 +48,7 @@ author: John He
 应用层协议为Secure Socket Layer, 如下图所示:
 
 
-  ![Image of Client Hello](https://raw.githubusercontent.com/johnhx/johnhx.github.io/master/img/https/client_hello.png)
+  ![Image of Client Hello](http://johnhx.github.io/img/https/client_hello.png)
 
 
 Secure Socket Layer的具体内容如下图所示, 包括：
@@ -78,7 +78,7 @@ Secure Socket Layer的具体内容如下图所示, 包括：
     - Extension部分(略)
 
 
-  ![Image of Client Hello SSL](https://raw.githubusercontent.com/johnhx/johnhx.github.io/master/img/https/client_hello_ssl.png)
+  ![Image of Client Hello SSL](http://johnhx.github.io/img/https/client_hello_ssl.png)
 
 
 - 第二步 服务端首次回应Server Hello报文
@@ -112,7 +112,7 @@ Secure Socket Layer的具体内容如下图所示, 包括：
   需要注意的是, 在协议的Extension部分, 服务端将后面步骤用到的证书的时间戳放在signed_certificate_timestamp字段发给了客户端.
 
 
-  ![Image of Server Hello](https://raw.githubusercontent.com/johnhx/johnhx.github.io/master/img/https/server_hello.png)
+  ![Image of Server Hello](http://johnhx.github.io/img/https/server_hello.png)
 
 
 - 第三步 服务端将证书发给客户端
@@ -128,7 +128,7 @@ Secure Socket Layer的具体内容如下图所示, 包括：
   - Handshake Protocol位"Server Hello Done(14)": 表示服务端的Server Hello完成
 
   
-  ![Image of Certificates](https://raw.githubusercontent.com/johnhx/johnhx.github.io/master/img/https/certificates.png)
+  ![Image of Certificates](http://johnhx.github.io/img/https/certificates.png)
 
 
 - 第四步 客户端回应服务端
@@ -145,7 +145,7 @@ Secure Socket Layer的具体内容如下图所示, 包括：
   此外, 客户端使用前面的两个随机数, 已经刚刚生成的第三个随机数, 使用之前与服务器确定的加密算法, 在客户端生成一个Session Secret.
 
 
-  ![Image of Client Key Exchange](https://raw.githubusercontent.com/johnhx/johnhx.github.io/master/img/https/client_key_exchange.png)
+  ![Image of Client Key Exchange](http://johnhx.github.io/img/https/client_key_exchange.png)
 
 
 - 第五步 服务端再次响应客户端
@@ -159,7 +159,7 @@ Secure Socket Layer的具体内容如下图所示, 包括：
   - 加密的Finish消息 ( 用于验证之前通过握手建立起来的加解密通道是否成功 )
 
 
-  ![Image of new session ticket](https://raw.githubusercontent.com/johnhx/johnhx.github.io/master/img/https/new_session_ticket.png)
+  ![Image of new session ticket](http://johnhx.github.io/img/https/new_session_ticket.png)
 
 
 至此, TLSv1.2的握手过程完成。
