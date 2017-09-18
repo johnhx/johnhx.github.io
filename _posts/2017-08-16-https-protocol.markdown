@@ -11,11 +11,9 @@ author: John He
 
 ## 背景
 
-关于Https协议规范, "Https协议详解"一文作为入门描述很不错.
+本文基于访问 https://mail.google.com 的WireShark抓包结果分析Https和SSL/TLS协议握手过程, 操作过程为:
 
-本文基于访问https://mail.google.com的WireShark抓包结果分析Https协议过程, 操作过程为:
-
-1. 打开chrome浏览器并访问https://mail.google.com首页
+1. 打开chrome浏览器并访问 https://mail.google.com 首页
 
 2. 关闭chrome
 
