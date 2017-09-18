@@ -45,13 +45,13 @@ author: John He
 
 - 第一步 客户端往服务端443端口发一个Client Hello报文
 
-应用层协议为Secure Socket Layer, 如下图所示:
+  应用层协议为Secure Socket Layer, 如下图所示:
 
 
   ![Image of Client Hello](http://johnhx.github.io/img/https/client_hello.png)
 
 
-Secure Socket Layer的具体内容如下图所示, 包括：
+  Secure Socket Layer的具体内容如下图所示, 包括：
 
   - Content Type为Handshake
 
