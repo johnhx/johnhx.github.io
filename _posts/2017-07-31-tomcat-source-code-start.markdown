@@ -82,9 +82,9 @@ org.apache.catalina.startup.Catalina类startup方法流程:
 
     注意: Digester是个维护XML和Java对象的库( 见 [Apache Digester](https://commons.apache.org/proper/commons-digester/guide/core.html) ), 动态添加了很多规则, 如:
 
-    - 当XML Parser扫描到“<Server>”时, 创建org.apache.catalina.core.StandardServer实例, 并保持其生命周期到“</Server>”
+    - 当XML Parser扫描到\<Server\>时, 创建org.apache.catalina.core.StandardServer实例, 并保持其生命周期到\</Server\>
      
-    - 当XML Parser扫描到“<Server><GlobalNamingResources>”时, 创建org.apache.catalina.deploy.NamingResourceImpl实例
+    - 当XML Parser扫描到\<Server\>\<GlobalNamingResources\>时, 创建org.apache.catalina.deploy.NamingResourceImpl实例
      
       ...
 
